@@ -2,7 +2,7 @@
 unless global.window
   global.window = global.document = global.requestAnimationFrame = undefined
 
-[m, render, r] = ['mithril', 'mithril-node-render', 'mreframe/reagent'].map require
+[render, r] = ['mithril-node-render', 'mreframe/reagent'].map require
 
 fooBar = (id, name) => ['span', {id}, "Hello, ", name, "!"]
 
