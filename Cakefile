@@ -30,7 +30,7 @@ buildStandalone = (options) ->
   build {outfile: "dist/mreframe.js", modules, expose: deps, ...options}
 
 task 'transpile', "transpile coffeescript files", ->
-  for dir in ['.', './src', './examples']
+  for dir in ['.', './src', './examples'] when fs.existsSync(dir)
     for s in fs.readdirSync(dir) when s.match /\.coffee$/
       src = "#{dir}/#{s}"
       console.log src
