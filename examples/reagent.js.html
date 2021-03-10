@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="UTF-8"/>
+  <title>mreframe reagent example (Mithril+Reagent components with initialization logic)</title>
+  <script src="../dist/mreframe.js"></script>
+</head><body>
+  <script>
+    const [{reagent: r}, m] = ['mreframe', 'mithril/hyperscript'].map(require);
+
+    // Mithril component using 'this'
+    let Component = {
+      oninit ({attrs: {add}}) {this.answer = 1;  console.log({add}, 'Component')},
+      view ({children, attrs: {add}}) {
+        return m('span', this.answer+(add||0), " ", children);
+      },
+    };
+    // Mithril component using 'vnode.state'
+    let Component2 = {
+      oninit: ({state, attrs: {add}}) => {state.answer = 2;  console.log({add}, 'Component2')},
+      view: ({state, children, attrs: {add}}) =>
+        m('span', state.answer+(add||0), " ", children),
+    };
+    // Mithril closure component
+    let ComponentF = ({attrs: {add}}) => {
+      let answer = 3;
+      console.log({add}, 'ComponentF');
+      return {view: ({children, attrs: {add}}) =>
+        m('span', answer+(add||0), " ", children)};
+    };
+
+    // Reagent form-2 component
+    let RComponentF = add => {
+      let answer = 4;
+      console.log({add}, 'RComponentF');
+      return (add, ...children) =>
+        ['span', answer+(add||0), " ", ['<>', ...children]];
+    };
+
+    // Reagent form-2 component with inner state and delayed update
+    let RComponentF2 = add => {
+      let self = r.currentComponent();
+      r.setState(self, {answer: 5});
+      console.log({add}, 'RComponentF2');
+      setTimeout(() => r.setState(self, {answer: 21}), 10000);
+      return (add, ...children) =>
+        ['span', r.state(self).answer+(add||0), " ", ['<>', ...children]];
+    };
+
+    // Reagent form-3 component with delayed update
+    let RComponent = r.createClass({
+      constructor: vnode => {
+        console.log({add: r.argv(vnode)[1]}, 'RComponent');
+        setTimeout(() => r.setState(vnode, {answer: 42}), 5000);
+      },
+      getInitialState: () => ({answer: 6}),
+      reagentRender: (add, ...children) =>
+        ['span', r.state( r.currentComponent() ).answer+(add||0), " ", ['<>', ...children]],
+    });
+
+    // Mithril app
+    let App1 = {
+      view: () => [
+        m('h1', document.title),
+        "Plain text",
+        m('p', "Plain paragraph"),
+        m('p',
+          m('i', {title: "Hover me "+Math.random()}, "Nested"),
+          " ",
+          m('span', {style: {color: 'green'}}, "text")),
+        m('p', m(Component, {add: Math.random()}, "component"), " text"),
+        m('p', m(Component2, {add: Math.random()}, "component"), " text"),
+        m('p', m(ComponentF, {add: Math.random()}, "function"), " text"),
+        m('button', {onclick: () => {}}, "Rerender"),
+      ],
+    };
+    //m.mount(document.body, App1);
+
+    // Reagent app
+    let App2 = () =>
+      ['<>',
+        ['h1', document.title],
+        "Plain text",
+        ['p', "Plain paragraph"],
+        ['p',
+          ['i', {title: "Hover me " + Math.random()}, "Nested"],
+          " ",
+          ['span', {style: {color: 'green'}}, "text"]],
+        ['p', ['>', Component, {add: Math.random()}, "component"], " text"],
+        ['p', ['>', Component2, {add: Math.random()}, "component"], " text"],
+        ['p', ['>', ComponentF, {add: Math.random()}, "function"], " text"],
+        ['p', r.asElement([RComponentF, Math.random(), "component"]), " text"],
+        ['p', [RComponentF, Math.random(), "function"], " text"],
+        ['p', [RComponentF2, Math.random(), "function"], " text"],
+        ['p', [RComponent, Math.random(), "component"], " text"],
+        ['button', {onclick: () => {}}, "Rerender"]];
+
+    r.render([App2], document.body);
+  </script>
+</body></html>

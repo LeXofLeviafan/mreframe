@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="UTF-8"/>
+  <title>mreframe routing example (with nodeps script)</title>
+  <script src="../dist/mreframe-nodeps.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/2.0.4/mithril.min.js"></script>
+  <script src="https://unpkg.com/wisp@0.13.0/dist/wisp.min.js"></script>
+  <style>nav > a {text-transform: capitalize}  main {background: lightgrey}</style>
+</head><body>
+  <script type="application/wisp">
+    (ns script
+      (:require [mreframe.re-frame :as rf]
+                [mreframe.reagent :as r]
+                [mreframe.atom :refer [deref]]    ; @
+                [mreframe.util :refer [get-in]])) ; missing in Wisp
+    (rf._init {:mount m.mount, :redraw m.redraw, :hyperscript m, :eq =})
+    (def uris ["foo" "bar" "baz" "foo/bar" "foo/bar/baz"])
+
+    ;; interop with m.route
+    (defn uri-name [{:strs [first rest]}]
+      (if-not rest (or first "") (str first "/" rest)))
+    (rf.reg-sub :view get-in)
+    (rf.reg-sub :view-params get-in)
+    (rf.reg-sub :uri-name :<- [:view-params] uri-name)
+
+    (rf.reg-fx :nav #(apply m.route.set %))
+
+    (rf.reg-event-fx :navigate [rf.trimV]
+      (fn [_ args] {:nav args}))
+    (rf.reg-event-db :set-view [rf.trimV]
+      (fn [db [id params]]
+        (merge db {:view id, :view-params params})))
+
+    ;; components
+    (defn nav-link [view disabled]
+      [:> m.route.Link {:href (str "/" view), :disabled disabled}
+        (or view "home")])
+
+    (defn header []
+      (let [[view uri] (for [k [:view :uri-name]] @(rf.subscribe [k]))]
+        [:div.header
+          [:h1 document.title]
+          (into [:nav]
+            (for [s (cons "" uris)]
+              [:<> " " [nav-link s (= s uri)]]))
+          [:h3 "View: " view]]))
+
+    (defn tab [uri] ; uri is taken directly from router
+      [:<>
+        [header]
+        [:main [:h2 "Uri: " uri]]])
+
+    (defn tab* [args]
+      [tab (str "~" (uri-name args))])
+
+    ;; routing, synced with db
+    (let [-upd   #(rf.dispatch [:set-view %1 (r.props %2)])
+          -route (fn [id render] {:oninit #(-upd id %), :onupdate #(-upd id %), :view render})]
+      (m.route document.body "/"
+        {"/"                (-route :root #(r.as-element [header]))
+         "/:first"          (-route :tab  #(r.as-element [tab (-> % r.props :first)]))
+         "/:first/:rest..." (-route :tab* #(r.as-element [tab* (r.props %)]))}))
+  </script>
+</body></html>

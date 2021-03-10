@@ -1,0 +1,29 @@
+{
+  "name": "mreframe",
+  "version": "0.0.1",
+  "description": "A reagent/re-frame imitation that uses Mithril instead",
+  "main": "index.js",
+  "author": "LeXofLeviafan <lexofleviafan@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "install": "cake transpile",
+    "prepare": "cake build:all",
+    "build": "cake transpile && cake build",
+    "build-min": "cake transpile && cake --minify build",
+    "build:nodeps": "cake transpile && cake build:nodeps",
+    "build-min:nodeps": "cake transpile && cake --minify build:nodeps",
+    "build:all": "cake transpile && cake build:all",
+    "clean": "cake clean",
+    "test": "coffee test/all.coffee"
+  },
+  "dependencies": {
+    "coffeescript": "^2.5.1",
+    "mithril": "^2.0.4"
+  },
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "ospec": "^4.1.1",
+    "rimraf": "^3.0.2",
+    "tinyify": "^3.0.0"
+  }
+}

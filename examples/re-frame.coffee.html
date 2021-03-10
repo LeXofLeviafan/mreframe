@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="UTF-8"/>
+  <title>mreframe re-frame example (state/side-effects management)</title>
+  <script src="../dist/mreframe.js"></script>
+  <script src="https://unpkg.com/coffeescript"></script>
+  <style>.counter {padding: 1ex}   .row {display: block}</style>
+</head><body>
+  <script type="text/coffeescript">
+    {reagent: r, reFrame: rf, util: {getIn, assoc, repr}} = require 'mreframe'
+    # initial state
+    appDb = counter: 0
+    _remoteList = [{foo: 1, bar: 'a'}, {foo: 2, bar: 'b'}, {foo: 3, bar: 'c'}]
+
+    # subscriptions (calculate data for views)
+    rf.regSub 'counter', (db) -> db.counter
+    rf.regSub 'list', getIn
+    rf.regSub 'foo1', '<-', ['list', 0], repr
+
+    # effects (implemented side-effects)
+    rf.regFx 'alert', alert
+    fetchFx = ({url, method='POST', body, convert=identity, onSuccess, onFailure}) =>
+      fetch(url, {method, body}).then((x) -> x.json()).then(convert)
+        .then (s) -> rf.disp onSuccess, s
+        .catch (error) -> rf.disp onFailure, error
+    rf.regFx 'fetch', fetchFx
+    rf.regFx 'fetchEcho', ({json, onSuccess, onFailure}) =>
+      fetchFx {url: "https://httpbin.org/anything", body: json, convert: ((x) -> x.json), onSuccess, onFailure}
+
+    # coeffects (collecting event inputs from system state)
+    rf.regCofx 'now', (cofx, key='time') -> assoc cofx, key, new Date
+    dbg = rf.after (_, event) -> console.warn event   # logging interceptor
+
+    # events (pure functions with decision-making logic)
+    rf.regEventDb 'init-db', -> appDb
+    rf.regEventDb 'set', [dbg], (db, [_, key, value]) -> assoc db, key, value
+    rf.regEventFx 'alert', [rf.unwrap], (_, msg) -> alert: msg
+    rf.regEventDb 'upd-counter', [rf.unwrap, rf.path 'counter'], (counter, n) -> counter + n
+    rf.regEventFx 'show-db', [rf.trimV], ({db}, path) =>
+      alert: repr getIn(db, path)
+    rf.regEventFx 'show-time', [rf.injectCofx 'now'], ({time}, _) -> alert: time
+    rf.regEventFx 'load-list', ->
+      fetchEcho: {json: repr(_remoteList), onSuccess: ['set', 'list'], onFailure: ['alert']}
+
+    # components
+    updButton = (n, caption="#{n}") ->
+      ['button', {onclick: -> rf.dispatch ['upd-counter', n]}, caption]
+
+    counter = (title) ->
+      [tooltip, num] = [title, ['counter']].map rf.dsub
+      ['div', title: tooltip,
+        [updButton, -10]
+        [updButton, -1]
+        ['span.counter', num]
+        [updButton, +1, "+1"]
+        [updButton, +10, "+10"]]
+
+    checkLater = (delay) -> # form-2, with inner state
+      self = r.currentComponent()
+      r.setState self, checked: off
+      setTimeout (-> r.setState self, checked: on;  console.log 'checked'), delay*1000
+      -> ['input[type=checkbox][disabled]', checked: r.state(self).checked]
+
+    app = ->
+      list = rf.dsub ['list']
+      ['<>',
+        ['h1', document.title]
+        [counter, ['foo1']]
+        [checkLater, 5]
+        ['span', {style: {color: 'green'}}, "Hello, World"]
+        ['button.row', {onclick: -> rf.dispatch ['show-db']}, "Show DB"]
+        ['button.row', {disabled: not list, onclick: -> rf.dispatch ['show-db', 'list']},
+          "Show list"]
+        ['button.row', {onclick: -> rf.dispatch ['show-time']}, "Show time"]]
+
+    # init
+    rf.dispatchSync ['init-db']
+    setTimeout (-> rf.dispatch ['load-list']), 2500
+    r.render [app], document.body
+  </script>
+</body></html>
