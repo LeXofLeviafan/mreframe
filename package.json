@@ -1,6 +1,6 @@
 {
   "name": "mreframe",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A reagent/re-frame imitation that uses Mithril instead",
   "main": "index.js",
   "author": "LeXofLeviafan <lexofleviafan@gmail.com>",
@@ -25,5 +25,10 @@
     "ospec": "^4.1.1",
     "rimraf": "^3.0.2",
     "tinyify": "^3.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeXofLeviafan/mreframe"
+  },
+  "keywords": ["mithril"]
 }
