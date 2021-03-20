@@ -42,6 +42,11 @@ o.spec "mreframe/re-frame", ->
       .equals(context.coeffects.db)			"returns requested coeffect on two arguments"
     o(rf.getCoeffect context, 'foo').equals(undefined)	"returns undefined if requested coeffect is missing"
     o(rf.getCoeffect context, 'foo', 42).equals(42)	"returns third argument if requested coeffect is missing"
+    context2 = mkContext fx: db: null
+    o(rf.getEffect context2, 'db', 42).equals(null)	"null is considered an existing value"
+    context3 = mkContext fx: db: undefined
+    o(rf.getEffect context3, 'db', 42)
+      .equals(undefined)				"undefined is considered an existing value"
 
   o "assocCoeffect()", ->
     context = mkContext()
@@ -57,6 +62,11 @@ o.spec "mreframe/re-frame", ->
       .equals(context.effects.db)			"returns requested effect on two arguments"
     o(rf.getEffect context, 'foo').equals(undefined)	"returns undefined if requested effect is missing"
     o(rf.getEffect context, 'foo', 42).equals(42)	"returns third argument if requested effect is missing"
+    context2 = mkContext fx: db: null
+    o(rf.getEffect context2, 'db', 42).equals(null)	"null is considered an existing value"
+    context3 = mkContext fx: db: undefined
+    o(rf.getEffect context3, 'db', 42)
+      .equals(undefined)				"undefined is considered an existing value"
 
   o "assocEffect()", ->
     fx = -> db: {foo: 'bar'}

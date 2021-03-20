@@ -30,7 +30,7 @@ more convenient to use in JS, I did so.
 
 For further information, I suggest checking out the original (ClojureScript) [`reagent`](https://reagent-project.github.io)
 and [`re-frame`](https://day8.github.io/re-frame/re-frame) libraries documentation. Code examples specific to `mreframe` can
-be found in the following Examples section, as well as in the API reference (
+be found in the following Examples section, as well as in the API reference.
 
 # Examples
 

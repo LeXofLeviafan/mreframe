@@ -6,7 +6,6 @@ deps = "mithril/mount,mithril/render,mithril/redraw,mithril/hyperscript"
 option '-o', '--outfile [FILE]', "output filename ('.min' is added automatically when minifying)"
 option '-m', '--minify', "minify the bundle"
 option '-s', '--source', "source index file"
-#option '-x', '--exclude [PACKAGES]', "list of packages to exclude (comma-separated)"
 option '-x', '--expose [PACKAGES]', "list of packages to expose (comma-separated)"
 
 build = (options) ->
@@ -18,7 +17,6 @@ build = (options) ->
   bundler = require('browserify')().require source, expose: 'mreframe'
   bundler.require "#{source}/#{s}", expose: "mreframe/#{s}" for s in (options.modules or [])
   bundler.require s, expose: s for s in options.expose?.split(',') or [] when s
-  #bundler.external s for s in options.exclude?.split(',') or [] when s
   bundler.plugin 'tinyify' if options.minify
   bundler.bundle().on('error', console.error).pipe fs.createWriteStream outfile
   @

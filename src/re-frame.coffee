@@ -79,7 +79,7 @@ exports.toInterceptor = toInterceptor = (args) =>
   before: args?.before or identity
   after:  args?.after or identity
 
-_getX = (x, key, notFound) => unless key then x else ((x or {})[key] ? notFound)
+_getX = (x, key, notFound) => unless key then x else if key of (x or {}) then x[key] else notFound
 ### Returns context coeffects or specified coeffect ###
 exports.getCoeffect = getCoeffect = (context, key, notFound) =>
   _getX context.coeffects, key, notFound
