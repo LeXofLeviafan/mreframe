@@ -32,6 +32,27 @@ For further information, I suggest checking out the original (ClojureScript) [`r
 and [`re-frame`](https://day8.github.io/re-frame/re-frame) libraries documentation. Code examples specific to `mreframe` can
 be found in the following Examples section, as well as in the API reference.
 
+# Usage
+
+Install the NPM package into a project with `npm i mreframe`/`yarn add mreframe`;  
+or, import as a script in webpage from a CDN: `<script src="https://unpkg.com/mreframe/dist/mreframe.min.js"></script>`.
+
+Access in code by requiring either main module:
+```js
+const {reFrame: rf, reagent: r, atom: {atom, deref, reset, swap}, util: {getIn, assoc, merge}} = require('mreframe');
+```
+or separate submodules:
+```js
+const rf = require('mreframe/re-frame');
+const {getIn} = require('mreframe/util');
+```
+In case you're using nodeps bundle, or if you want to customize the equality function used by mreframe, run `_init` first:
+```js
+rf._init({eq: _.eq});
+```
+`_init` is exposed by `reagent` submodule (affects only the submodule itself), and also by `re-frame` and the main module
+(affects both `re-frame` and `reagent` submodules).
+
 # Examples
 
 * [Reagent form-2 components + Reagent/Mithril interop](examples/reagent.js.html) (scripted in JavaScript)

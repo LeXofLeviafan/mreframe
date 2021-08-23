@@ -1,6 +1,6 @@
 {
   "name": "mreframe",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A reagent/re-frame imitation that uses Mithril instead",
   "main": "index.js",
   "author": "LeXofLeviafan <lexofleviafan@gmail.com>",
