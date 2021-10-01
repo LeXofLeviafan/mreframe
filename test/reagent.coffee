@@ -145,6 +145,9 @@ o.spec "mreframe/reagent", ->
   o "asElement()", ->
     str = "Hello, World!"
     obj = foo: 1
+    obj2 = foo: 1, key: 2
+    meta = key: 42
+    metaObj = key: 42, foo: 1
     fn = -> 42
     o(r.asElement str).equals(str)			"returns strings as-is"
     o(r.asElement fn).equals(fn)			"returns functions as-is"
@@ -153,15 +156,26 @@ o.spec "mreframe/reagent", ->
       .deepEquals(vnode 'div', {}, [str, 42])		"renders HTML vnodes"
     o(r.asElement ['div', obj, str, 42])
       .deepEquals(vnode 'div', obj, [str, 42])		"renders HTML vnodes with props"
+    o(r.asElement r.with meta, ['div', str, 42])
+      .deepEquals(vnode 'div', meta, [str, 42])		"renders HTML vnodes with meta"
+    o(r.asElement r.with meta, ['div', obj, str, 42])
+      .deepEquals(vnode 'div', metaObj, [str, 42])	"renders HTML vnodes with props and meta"
+    o(r.asElement r.with meta, ['div', obj2, str, 42])
+      .deepEquals(vnode 'div', metaObj, [str, 42])	"renders HTML vnodes with props and meta overriding props"
     rcomp = mcomp = view: fn
     o(r.asElement ['>', mcomp, str, 42])
       .deepEquals(vnode mcomp, {}, [str, 42])		"renders :> vnodes"
     o(r.asElement ['>', mcomp, obj, str, 42])
       .deepEquals(vnode mcomp, obj, [str, 42])		"renders :> vnodes with props"
+    o(r.asElement r.with meta, ['>', mcomp, str, 42])
+      .deepEquals(vnode mcomp, meta, [str, 42])		"renders :> vnodes with meta"
+    o(r.asElement r.with meta, ['>', mcomp, obj, str, 42])
+      .deepEquals(vnode mcomp, metaObj, [str, 42])	"renders :> vnodes with props and meta"
+    o(r.asElement r.with meta, ['>', mcomp, obj2, str, 42])
+      .deepEquals(vnode mcomp, metaObj, [str, 42])	"renders :> vnodes with props and meta overriding props"
     children = [(vnode 'div'), (vnode 'span', obj, [42])]
     o(r.asElement ['<>', ['div'], ['span', obj, 42]])
       .deepEquals(m.fragment {}, children)		"renders :<> vnodes"
-    meta = key: 42
     o(r.asElement (r.with meta, ['<>', ['div'], ['span', obj, 42]]))
       .deepEquals(m.fragment meta, children)		"renders :<> vnodes with meta"
     form = [rcomp, obj, str, 42]

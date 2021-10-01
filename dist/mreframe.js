@@ -1733,7 +1733,7 @@ module.exports = Vnode
 
 },{"./atom":9,"./reagent":11,"./util":12}],11:[function(require,module,exports){
 (function() {
-  var None, RAtom, RCursor, _cursor, _eq_, _fnElement, _fragment_, _mithril_, _mount_, _redraw_, _renderCache, _vnode, _with, argv, asElement, assoc, assocIn, atom, calcCssClass, children, classNames, createElement, deref, eq, getIn, identity, isArray, isDict, isFn, keys, merge, props, ratom, reset, second, stateAtom, swap, type;
+  var None, RAtom, RCursor, _cursor, _eq_, _fnElement, _fragment_, _meta, _mithril_, _mount_, _redraw_, _renderCache, _vnode, argv, asElement, assoc, assocIn, atom, calcCssClass, children, classNames, createElement, deref, eq, getIn, identity, isArray, isDict, isFn, keys, merge, props, ratom, reset, second, stateAtom, swap, type;
 
   ({eq, type, isArray, isDict, isFn, keys, getIn, merge, assoc, assocIn, identity} = require('./util'));
 
@@ -1787,6 +1787,14 @@ module.exports = Vnode
     return _renderCache.get(fcomponent);
   };
 
+  _meta = (meta, args) => {
+    if (isDict(args[0])) {
+      return [merge(args[0], meta), ...args.slice(1)];
+    } else {
+      return [meta, ...args];
+    }
+  };
+
   /* Converts Hiccup forms into Mithril vnodes */
   exports.asElement = asElement = (form) => {
     var head, meta, tail;
@@ -1796,11 +1804,11 @@ module.exports = Vnode
       [head, ...tail] = form;
       meta = form._meta || {};
       if (head === '>') {
-        return createElement(tail[0], ...tail.slice(1).map(asElement));
+        return createElement(tail[0], ...(_meta(meta, tail.slice(1))).map(asElement));
       } else if (head === '<>') {
         return _fragment_(meta, tail.map(asElement));
       } else if (type(head) === String) {
-        return createElement(head, ...tail.map(asElement));
+        return createElement(head, ...(_meta(meta, tail)).map(asElement));
       } else if (isFn(head)) {
         return createElement(_fnElement(head), merge(meta, {
           argv: form
@@ -1823,7 +1831,7 @@ module.exports = Vnode
   };
 
   /* Adds metadata to the Hiccup form of a Reagent component or a fragment */
-  exports.with = _with = (meta, form) => {
+  exports.with = (meta, form) => {
     form = form.slice(0);
     form._meta = meta;
     return form;

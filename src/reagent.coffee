@@ -32,13 +32,14 @@ _fnElement = (fcomponent) =>
     _renderCache.set fcomponent, component
   _renderCache.get fcomponent
 
+_meta = (meta, args) => if isDict args[0] then [merge(args[0], meta), ...args[1..]] else [meta, ...args]
 ### Converts Hiccup forms into Mithril vnodes ###
 exports.asElement = asElement = (form) => unless isArray form then form else
   [head, ...tail] = form
   meta = form._meta or {}
-  if head is '>'               then createElement tail[0], ...tail[1..].map asElement
+  if head is '>'               then createElement tail[0], ...(_meta meta, tail[1..]).map asElement
   else if head is '<>'         then _fragment_ meta, tail.map asElement
-  else if type(head) is String then createElement head, ...tail.map asElement
+  else if type(head) is String then createElement head, ...(_meta meta, tail).map asElement
   else if isFn head            then createElement (_fnElement head), (merge meta, argv: form)
   else createElement head, (merge meta, argv: form)
 
@@ -46,7 +47,7 @@ exports.asElement = asElement = (form) => unless isArray form then form else
 exports.render = (comp, container) => _mount_ container, view: => asElement comp
 
 ### Adds metadata to the Hiccup form of a Reagent component or a fragment ###
-exports.with = _with = (meta, form) => form = form[..];  form._meta = meta;  form
+exports.with = (meta, form) => form = form[..];  form._meta = meta;  form
 
 ###
   Creates a class component based on the spec. (It's a valid Mithril component.)

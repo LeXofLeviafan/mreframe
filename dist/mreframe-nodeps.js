@@ -484,7 +484,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
 },{"./atom":"mreframe/atom","./reagent":"mreframe/reagent","./util":"mreframe/util"}],"mreframe/reagent":[function(require,module,exports){
 (function() {
-  var None, RAtom, RCursor, _cursor, _eq_, _fnElement, _fragment_, _mithril_, _mount_, _redraw_, _renderCache, _vnode, _with, argv, asElement, assoc, assocIn, atom, calcCssClass, children, classNames, createElement, deref, eq, getIn, identity, isArray, isDict, isFn, keys, merge, props, ratom, reset, second, stateAtom, swap, type;
+  var None, RAtom, RCursor, _cursor, _eq_, _fnElement, _fragment_, _meta, _mithril_, _mount_, _redraw_, _renderCache, _vnode, argv, asElement, assoc, assocIn, atom, calcCssClass, children, classNames, createElement, deref, eq, getIn, identity, isArray, isDict, isFn, keys, merge, props, ratom, reset, second, stateAtom, swap, type;
 
   ({eq, type, isArray, isDict, isFn, keys, getIn, merge, assoc, assocIn, identity} = require('./util'));
 
@@ -538,6 +538,14 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     return _renderCache.get(fcomponent);
   };
 
+  _meta = (meta, args) => {
+    if (isDict(args[0])) {
+      return [merge(args[0], meta), ...args.slice(1)];
+    } else {
+      return [meta, ...args];
+    }
+  };
+
   /* Converts Hiccup forms into Mithril vnodes */
   exports.asElement = asElement = (form) => {
     var head, meta, tail;
@@ -547,11 +555,11 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
       [head, ...tail] = form;
       meta = form._meta || {};
       if (head === '>') {
-        return createElement(tail[0], ...tail.slice(1).map(asElement));
+        return createElement(tail[0], ...(_meta(meta, tail.slice(1))).map(asElement));
       } else if (head === '<>') {
         return _fragment_(meta, tail.map(asElement));
       } else if (type(head) === String) {
-        return createElement(head, ...tail.map(asElement));
+        return createElement(head, ...(_meta(meta, tail)).map(asElement));
       } else if (isFn(head)) {
         return createElement(_fnElement(head), merge(meta, {
           argv: form
@@ -574,7 +582,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
   };
 
   /* Adds metadata to the Hiccup form of a Reagent component or a fragment */
-  exports.with = _with = (meta, form) => {
+  exports.with = (meta, form) => {
     form = form.slice(0);
     form._meta = meta;
     return form;
