@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="UTF-8"/>
+  <title>mreframe/re-frame: Build web apps, in JavaScript, leveraging Mithril.</title>
+  <link rel="stylesheet" href="tutorial/style.css"/>
+  <script src="dist/mreframe.js"></script>
+  <script src="tutorial/re-frame.examples.js"></script> <!-- example sources & pre-generated code highlights -->
+  <script src="tutorial/re-frame.js"></script> <!-- SPA script -->
+</head><body>
+<nav><ul class="nav">
+ <li><a href="https://www.npmjs.com/package/mreframe" title="mreframe (&quot;Mithril + re-frame&quot;)" target="_blank">mreframe</a></li>
+<li><a href="reagent.html" title="Reagent" target="_blank">Reagent</a></li>
+<li><a href="https://day8.github.io/re-frame" title="re-frame (CLJS)" target="_blank">[re-frame]</a></li>
+<li class="separator"></li>
+<li class="brand"><a title="Display JS code examples">JS</a></li>
+<li class=""><a title="Display Coffee code examples">Coffee</a></li>
+<li class=""><a title="Display Wisp code examples">Wisp</a></li>
+</ul></nav>
+
+<main>
+
+<h1><code>mreframe/re-frame</code>: Build web apps, in <del>ClojureScript</del> JavaScript, leveraging <del>React</del> Mithril.</h1>
+  <strong>Note: This is a small introduction to <code>mreframe/re-frame</code>, partially based on the <a href="https://day8.github.io/re-frame/re-frame" target="_blank">original tutorial for re-frame (a React/ClojureScript library)</a></strong>
+<p>McCoy might report “It's MVC, Jim, but not as we know it”.
+And you would respond “McCoy, you trouble maker, why even mention an OO pattern? re-frame is a <strong>functional framework</strong>.”</p>
+<p>So, it is about <code>data</code>, and the <code>functions</code> which transform that data.
+And, because it is a <strong>reactive framework</strong>, <code>data</code> coordinates <code>functions</code>, not the other way around.</p>
+
+
+<h2 id="the-data-loop">The Data Loop</h2>
+<p>The original <a href="https://day8.github.io/re-frame" target="_blank">re-frame</a> framework is a <a href="https://clojure.org" target="_blank">Clojure</a> library, and Clojure is a LISP.
+The reason this is important is because a (defining) property of a LISP is that any program in it is also valid LISP data.
+It may not seem obvious at the first glance, but it defines the very experience of programming in Clojure at a profound level.
+You are <em>programming in data</em>.</p>
+<p>So, it will come as no surprise, then, to find that re-frame has a data-oriented design.
+Events are data. Effects are data. DOM is data. The functions which transform data are registered and looked up via data.
+Interceptors (data) are preferred to middleware (higher order functions). Etc.</p>
+<p>And re-frame apps are reactive which further elevates data because in reactive systems,
+ it is the arrival of data which coordinates the calling of functions, not the other way around.</p>
+<hr/>
+<p>Architecturally, re-frame implements “a perpetual loop”.</p>
+<p>To build an app, you hang pure functions on certain parts of this loop, and re-frame looks after the <strong>conveyance of data</strong> around the loop,
+ into and out of the transforming functions you provide. The tag line for re-frame is “derived values, flowing”.</p>
+<p>re-frame provides the conveyance of the data around the loop. You design what's flowing,
+ and then you hang functions on the loop at various points to compute the data's phase changes.</p>
+<hr/>
+<p>Each iteration of the re-frame loop has 6 stages, happening one after the other:</p>
+<ol><li>Event dispatch</li>
+<li>Event handling</li>
+<li>Effect handling</li>
+<li>Query</li>
+<li>View (handled by Reagent)</li>
+<li>DOM (handled by Mithril)</li></ol>
+<hr/>
+<p>An <em>event</em> is sent when something happens - the user clicks a button, or a websocket receives a new message.
+(Similarly to a Reagent component, it's an array containing the ID – a function in case of Reagent – followed by arguments, if needed.)</p>
+<p>Then, a <em>context</em> dict is created; it's directed through a chain of <em>interceptors</em>, at the end of which an <em>event handler</em> is placed;
+ then the chain is followed backwards, ending up with a final version of the event context.</p>
+<p>The true result of handling an event is an <em>effects</em> dict residing within the context; it contains the set of effects that need to be evoked as the consequence.</p>
+<p>After this, a Mithril redraw is typically triggered; Reagent recalculates its components, which query <em>subscriptions</em> – Reagent atoms (or cursors, more specifically),
+ that are calculated from the current app state: the <code>rf.appDb</code> RAtom value (either directly or via other subscriptions).
+Same as for the effects, a subscription is an array containing its ID followed by arguments, if needed.</p>
+<p>Finally, the values are provided to views (Reagent components), which – in case these values changed – get recalculated, and Mithril propagates these changes to the DOM.</p>
+<p>As per the famous React formula, <code>v = f(s)</code>: view is a function of the app state.</p>
+<p>(<strong>Note:</strong> all of these parts are only connected at runtime by the framework, allowing you to define, use and test them independently of each other)</p>
+
+
+<h2 id="subscriptions-and-db-events">Subscriptions and DB events</h2>
+<p>The backbone of the data loop, as well as the most basic interaction, is handling of the app state (app-db); let's take a look at those.</p>
+<p>While you <em>can</em> work with the state RAtom directly, it's much better to use means of the framework itself: subscriptions and events.
+To register a data-changing event, use <code>rf.regEventDb()</code>:</p>
+
+<h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
+<pre class="source simple"><code class="language-js">let rf = require('mreframe/re-frame');
+
+
+// replaces db state with APP_DB
+rf.regEventDb('init-db', (db, event) =&gt; APP_DB);
+
+rf.dispatchSync(['init-db']);  // immediately evoke init-db{} (i.e. before r.render)
+
+
+rf.regEventDb('set-view', (db, [_, view]) =&gt; ({...db, view}));
+
+rf.dispatch(['set-view', 'main']);  // asynchronously evoke set-view{'main'}
+
+
+rf.regEventDb('add-counter', (db, [_, n=1]) =&gt; ({...db, counter: db.counter+n}));
+
+rf.disp(['add-counter', 5]);  // asynchronously evoke add-counter{5}
+// rf.disp(evt, ...args) &lt;=&gt; evt &amp;&amp; rf.dispatch([...evt, ...args])</code></pre>
+
+<p>As you can tell, it accepts two arguments: the event ID (used for dispatching handlers) and the handler function (which in turn accepts app-db and the event).
+(There's also a third, optional argument, but we can ignore it for the time being.)</p>
+<p>(<strong>Note:</strong> do <em>not</em> mutate the DB dict or values within it; doing so <em>will</em> mess up change detection)</p>
+<hr/>
+<p>To query this app-db value, subscriptions are registered using <code>rf.regSub()</code>:</p>
+
+<h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
+<pre class="source simple"><code class="language-js">let rf = require('mreframe/re-frame');
+
+
+rf.regSub('view', (db, sub) =&gt; db.view);
+
+rf.subscribe(['view']) // =&gt; RCursor returning current db.view value
+
+
+rf.regSub('item', (db, [_, key]) =&gt; db.dict[key]);
+
+rf.dsub(['item', 'foo']) // db.dict['foo']
+// rf.dsub(sub) &lt;=&gt; deref( rf.subscribe(sub) )</code></pre>
+
+<p>The API is pretty much the same as for DB events: we pass query ID (used for dispatching), as well as the handler function (which accepts app-db and the query).</p>
+<p>These are <em>extractors</em>: subscriptions which give direct access to values from app-db.
+It's often not even necessary to define query functions: just use <code>getIn</code> instead (it accepts the same arguments: dict followed by a path to follow).</p>
+<hr/>
+<p>Other than extractors, there's also <em>computation</em> subscriptions; they use other subscriptions as inputs, in place of app-db.
+To register such a subscription, you need to provide additional argument(s) to <code>rf.regSub()</code> <em>after the query ID</em>;
+ it's either a function (accepting the query and returning a single subscription, or an array or dict thereof),
+ or a sequence of <code>'&lt;-'</code> keywords each followed by a query literal (which is equivalent to a single subscription or an array thereof):</p>
+
+<h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
+<pre class="source simple"><code class="language-js">let {reFrame: rf, util: {getIn, identity, dict}} = require('mreframe');
+
+// extraction subscription
+rf.regSub('list', getIn);  // getIn(db, ['list']) | getIn(db, ['list', idx]) | ...
+
+// computation subscriptions (simple)
+rf.regSub('#list', '&lt;-', ['list'],    list =&gt; list.length);
+rf.regSub('first', '&lt;-', ['list', 0], identity);
+
+// (derived from multiple)
+rf.regSub('pair', '&lt;-', ['first'], '&lt;-', ['list', 1],
+          ([first, second], _sub) =&gt; first + ", " + second);
+
+// (calculated dependency)
+rf.regSub('reverse', ([_, idx]) =&gt; rf.subscribe(['list', idx]),
+          (item, _sub) =&gt; item.split("").reverse().join(""));
+
+// (multiple)
+rf.regSub('palindrome',
+          ([_, idx]) =&gt; [['list', idx], ['reverse', idx]].map(rf.subscribe),
+          ([item, reverse], _sub) =&gt; item + reverse);
+
+// (dict)
+rf.regSub('sizes',
+          ([_, ...keys]) =&gt; dict( keys.map(k =&gt; [k, rf.subscribe(['item', k])]) ),
+          (dict, [_, ...keys]) =&gt; dict( keys.map(k =&gt; [k, dict[k].length]) ));</code></pre>
+
+<p>Both events and subscriptions are pure functions (no side-effects, no external inputs) and exist independently of each other (except for dependency subscriptions).</p>
+<hr/>
+<p>With just this, you already have the minimum basis of using re-frame: use subscriptions to access app state (i.e. in a Reagent component), and invoke events to change it.</p>
+
+
+<h2 id="fx-events-and-effects">FX events and effects</h2>
+<p>Naturally, there's things your app may need to do beyond mere state manipulation; things such as sending network requests, using browser API, or scheduling actions.
+In other words, <em>invoking side-effects</em>.</p>
+<p>To register such an event, <code>rf.regEventFx()</code> can be used. It works similarly to <code>rf.regEventDb()</code>,
+ except the handler function has a somewhat more complex API: instead of app-db, it accepts a dict of <em>coeffects</em>,
+ and the returned value is similarly a dict of <em>effects</em> – each key matches an existing effect, and the corresponding value is an argument.</p>
+<p>Aside from effects defined by you, there's a few predefined ones; one of them is the <code>db</code> effect which accepts new app state as its value;
+ similarly, the coeffects dict contains current app state in its <code>db</code> key.
+And yes, <code>rf.regEventDb()</code> is effectively a wrapper for <code>rf.regEventFx()</code> with simplified API.</p>
+
+<h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
+<pre class="source simple"><code class="language-js">let {reFrame: rf, util: {merge}} = require('mreframe');
+
+
+// evokes reminder{message} after specified delay
+rf.regEventFx('delayed-reminder', (cofx, [_, message, delayMsec]) =&gt;
+  ({dispatchLater: {dispatch: ['reminder', message],  ms: delayMsec}}));
+
+// displays the reminder (adds to appDb) and unsets it after 5 sec
+rf.regEventFx('reminder', ({db}, [_, reminder]) =&gt;
+  merge({db: merge(db, {reminder})},
+        reminder &amp;&amp;
+          {dispatchLater: {dispatch: ['reminder'],  ms: 5000}}));
+
+
+// dispatches multiple events in the given order
+rf.regEventFx('schedule-reminders', (cofx, [_, ...reminders]) =&gt;
+  ({fx: reminders.map(it =&gt; ['dispatch', ['reminder', it]])}));</code></pre>
+
+<hr/>
+<p>As for the effects themselves, they're impure functions (with side-effects), which accept a single argument; they can be registered using <code>rf.regFx()</code>:</p>
+
+<h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
+<pre class="source simple"><code class="language-js">let {reFrame: rf, util: {assocIn}} = require('mreframe');
+
+
+// side-effect alert(arg)
+rf.regFx('alert', arg =&gt; alert(arg));
+
+// event alert{msg} causes side-effect alert
+rf.regEventFx('alert', (cofx, [_, msg]) =&gt; ({alert: msg});
+
+
+let _jsonRequest = response =&gt;
+  (response.ok ? response.json() : Promise.reject(response.status));
+// downloads JSON from a URL, then evokes passed event with added param
+rf.regFx('fetchJson', ({url, params, onSuccess, onFailure}) =&gt;
+  fetch(url, params).then(_jsonRequest)
+                    .then(data =&gt; rf.disp(onSuccess, data))
+                    .catch(status =&gt; rf.disp(onFailure, status));
+
+// event fetch-json{key, url} causes side-effect fetchJson
+rf.regEventFx('fetch-json', ({db}, [_, key, url]) =&gt;
+  ({fetchJson: {url,  params: db.params,  onSuccess: ['-fetch-json', key]}}));
+
+// evoked by fetchJson on success
+rf.regEventFx('-fetch-json', ({db}, [_, key, data]) =&gt;
+  ({db:    assocIn(db, ['cache', key], data),
+    alert: "Fetched '" + key + "'!"}));</code></pre>
+
+<p>(<strong>Note:</strong> other DB and FX events, there are CTX events which manipulate event context directly; they rarely come up in regular code, however.)</p>
+
+
+<h2 id="coeffects-and-interceptors">Coeffects and interceptors</h2>
+<p>In the DB events section I've mentioned that <code>rf.regEvents*</code> API accepts an additional, optional argument.
+This argument (similarly to <code>rf.regSub()</code> placed <em>after the event ID</em>) is a list of <em>interceptors</em>.</p>
+<p>Interceptors are added to the event pre/post-processing chain, and their main purpose is operating the event context.
+For instance, they're used for populating the coeffects dict passed into FX event handlers;
+ such interceptors are registered using <code>rf.regCofx()</code>, and injected using <code>rf.injectCofx()</code>:</p>
+
+<h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
+<pre class="source simple"><code class="language-js">let {reFrame: rf, util: {assoc, merge}} = require('mreframe');
+
+
+// adds a value named 'now' into the cofx dict (non-pure function)
+rf.regCofx('time', cofx =&gt; merge(cofx, {now: new Date}));
+
+// uses the time coeffect (pure function)
+rf.regEventFx('show-time', [rf.injectCofx('time')], ({now}) =&gt;
+  ({alert: "Current time is: " + now}));
+
+
+// loads a value from localStorage
+rf.regCofx('load', (cofx, key) =&gt; {
+  try {return assoc(cofx, key, JSON.parse( localStorage.getItem(key) ))}
+  catch (e) {return cofx}
+});
+
+// loads 'state' from localStorage and adds it into appDb
+rf.regEventFx('load-state', [rf.injectCofx('load', 'state')], ({db, state}) =&gt;
+  ({db: merge(db, {state})}));</code></pre>
+
+<hr/>
+<p>An interceptor is a simple dict of three keys: <code>id</code> (used for debugging), <code>before</code> and <code>after</code>;
+ the latter two are functions called on the context object before and after event handling (accepting and returning a context):</p>
+
+<h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
+<pre class="source simple"><code class="language-js">let {reFrame: rf, util: {merge}} = require('mreframe');
+
+// this interceptor prints out event context before and after its handling
+let dbg = rf.toInterceptor({
+  id: 'dbg',
+  before: context =&gt; {
+    console.debug("before:", context);
+    return context;
+  },
+  after:  context =&gt; {
+    console.debug("after:", context);
+    return context;
+  },
+});
+
+rf.regEventDb('set-foo', [dbg], (db, [_, foo]) =&gt; merge(db, {foo}));</code></pre>
+
+<p>So, the event handling is done the following way:</p>
+<ol><li>An initial context is formed; its coeffects dict contains app state and the event itself</li>
+<li>The interceptors are walked <em>left-to-right</em>, each applying <code>.before()</code> to the context</li>
+<li>The event handler is applied to the context, producing a new context (with effects)</li>
+<li>The interceptors are walked <em>right-to-left</em>, each applying <code>.after()</code> to the context</li>
+<li>The effects dict of resulting context is then used for effects handling</li></ol>
+<hr/>
+<p><code>mreframe/re-frame</code> includes a few builtin interceptors/interceptor generators which cover main patterns of their usage:</p>
+
+<h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
+<pre class="source simple"><code class="language-js">let {reFrame: rf, util: {merge, assoc, assocIn}} = require('mreframe');
+
+
+// rf.path works on specified subpath of db (similarly to using assocIn)
+rf.regEventDb('set-foo', [rf.path('foo')], (db, [_, foo]) =&gt; foo);
+
+
+// rf.unwrap and rf.trimV simplify event data passed into handler
+rf.regEventDb('set', [rf.trimV], (db, [key, value]) =&gt; assoc(db, key, value));
+rf.regEventDb('set-foo', [rf.unwrap], (db, foo) =&gt; merge(db, {foo}));
+
+
+// rf.enrich and rf.after do post-processing of db after the event
+let ensureNumber = rf.enrich((db, [_, key]) =&gt;
+  assoc(db, key, Number(db[key]) || 0));           // db is updated
+let saveState = rf.after((db, event) =&gt;
+  localStorage.setItem('db', JSON.stringify(db))); // side-effect
+
+// after setting the value, it's converted to a number, then db is saved
+rf.regEventDb('set-number', [saveState, ensureNumber], (db, [_, key, value]) =&gt;
+  assoc(db, key, value));
+
+
+// rf.onChanges is similar to rf.enrich but recalculates conditionally
+let calcTotal = rf.onChanges((n1, n2, n3) =&gt; n1 + n2 + n3,
+                             ['outputs', 'total'],
+                             ['inputs', 1], ['inputs', 2], ['inputs', 3]);
+
+// if any of the three inputs is changed, db.outputs.total is recalculated
+rf.regEventDb('set-input', [calcTotal], (db, [_, key, value]) =&gt;
+  assocIn(db, ['inputs', key], value));</code></pre>
+
+
+
+<h2 id="live-demo">Live demo</h2>
+<p>Here's a (slightly modified) version of the <a href="https://github.com/day8/re-frame/blob/master/examples/simple/src/simple/core.cljs" target="_blank">original live demo</a></p>
+
+<h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
+<div id="demo" class="example demo"><div>
+  <h1>Hello world, it is now</h1>
+  <div style="color:#f88" class="example-clock">
+    02:25:00
+  </div>
+  <div class="color-input">
+    Time color: <input type="text" value="#f88"/>
+  </div>
+</div></div>
+<h3 class="source-heading demo">Source<span class="source-lang">JS</span></h3>
+<pre class="source demo"><code class="language-js">let {reFrame: rf, reagent: r, util: {merge}} = require('mreframe');
+
+
+// -- event dispatch ----------------------------------------------------------
+
+let dispatchTimerEvent = () =&gt;
+  rf.dispatch(['timer', new Date]);  // &lt;-- dispatch used
+
+// Call the dispatching function every second.
+setInterval(dispatchTimerEvent, 1000);  // doTimer
+
+
+// -- event handlers ----------------------------------------------------------
+
+rf.regEventDb(               // sets up initial application state
+ 'initialize',               // usage:  rf.dispatch(['initialize'])
+ () =&gt;                       // the two parameters are not important here, so omitting them
+   ({time: new Date,         // What it returns becomes the new application state
+     timeColor: "#f88"}));   // so the application state will initially be a dict with two keys
+
+
+rf.regEventDb(                 // usage:  rf.dispatch(['time-color-change', 34562])
+ 'time-color-change',          // dispatched when the user enters a new colour into the UI text field
+ (db, [_, newColorValue]) =&gt;   // DB event handlers given 2 parameters: application state and event (an array)
+   merge(db, {timeColor: newColorValue}));   // compute and return the new application state
+
+
+rf.regEventDb(                  // usage:  rf.dispatch(['timer', aJsDate])
+ 'timer',                       // every second an event of this kind will be dispatched
+ (db, [_, newTime]) =&gt;          // note how the 2nd parameter is destructured to obtain the data value
+   merge(db, {time: newTime})); // compute and return the new application state
+
+
+// -- query -------------------------------------------------------------------
+
+rf.regSub(
+ 'time',
+ (db, _) =&gt;     // db is current app state. 2nd unused param is query array
+   db.time);    // return a query computation over the application state
+
+rf.regSub('timeColor', db =&gt; db.timeColor);
+
+rf.regSub('time-show', '&lt;-', ['time'], it =&gt;
+  it.toTimeString().split(" ")[0]);
+
+
+// -- view functions ----------------------------------------------------------
+
+let clock = () =&gt;
+  ['div.example-clock', {style: {color: rf.dsub(['timeColor'])}},
+    rf.dsub(['time-show'])];
+
+let colorInput = () =&gt;
+  ['div.color-input',
+    "Time color: ",
+    ['input', {type:    'text',
+               value:   rf.dsub(['timeColor']),
+               oninput: e =&gt; rf.dispatch(['time-color-change', e.target.value])}]];  // &lt;---
+
+let ui = () =&gt;
+  ['div',
+    ['h1', "Hello world, it is now"],
+    [clock],
+    [colorInput]];
+
+
+// -- entry point -------------------------------------------------------------
+
+rf.dispatchSync(['initialize']);                // put a value into application state
+r.render([ui], document.getElementById('app')); // mount the application's ui into '&lt;div id="app"/&gt;'</code></pre>
+
+</main>
+</body></html>

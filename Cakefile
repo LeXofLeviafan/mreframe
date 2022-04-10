@@ -53,3 +53,6 @@ task 'perftest', "run performance tests", ->
   for test in ['mithril', 'mreframe']
     console.log "\t#{test}"
     spawnSync 'node', ["performance/test-perf.#{test}.js"], stdio: 'inherit'
+
+task 'gen-tutorial', "generate tutorial files", ->
+  spawnSync 'coffee', ['tutorial/generate.coffee'], stdio: 'inherit'

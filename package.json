@@ -13,6 +13,7 @@
     "build:nodeps": "cake transpile && cake build:nodeps",
     "build-min:nodeps": "cake transpile && cake --minify build:nodeps",
     "build:all": "cake transpile && cake build:all",
+    "gen-tutorial": "cake gen-tutorial",
     "clean": "cake clean",
     "test": "cake test",
     "perftest": "cake perftest"
@@ -24,9 +25,14 @@
   "devDependencies": {
     "benchmark": "^2.1.4",
     "browserify": "^17.0.0",
+    "domino": "^2.1.6",
+    "lodash": "^4.17.4",
+    "mithril-node-render": "^3.0.2",
     "ospec": "^4.1.1",
     "rimraf": "^3.0.2",
-    "tinyify": "^3.0.0"
+    "tinyify": "^3.0.0",
+    "tokenizr": "^1.6.5",
+    "turndown": "^7.1.1"
   },
   "repository": "github:LeXofLeviafan/mreframe",
   "homepage": "https://lexofleviafan.github.io/mreframe",
