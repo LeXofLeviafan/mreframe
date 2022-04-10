@@ -219,11 +219,12 @@ rf.dispatch(['log-value'])                    // prints out db
 
 ### [`after (f)`](https://day8.github.io/re-frame/api-re-frame.core/#after)
 Produces an interceptor which applies a side-effect to `db`.
-  ```js
-  rf.regEventDb('add-list', [rf.trimV, rf.path('lists'), rf.after(console.warn)],
-                (lists, [k, v]) => assoc(lists, k, v))
-  // an event which alters db.lists then prints it out
-  ```
+```js
+rf.regEventDb('add-list', [rf.trimV, rf.path('lists'), rf.after(console.warn)],
+              (lists, [k, v]) => assoc(lists, k, v))
+// an event which alters db.lists then prints it out
+```
+
 ### [`onChanges (f, outPath, ...inPaths)`](https://day8.github.io/re-frame/api-re-frame.core/#on-changes)
 Produces an interceptor which updates `outPath` if any of the values on `inPaths` got changed, by calling `f()` on these values.
 ```js
@@ -295,16 +296,26 @@ Resets app-db to its argument.
 ### [`'fx'`](https://day8.github.io/re-frame/api-builtin-effects/#fx) builtin effect
 Actions effects in the given order (e.g. `fx: [['foo', 1], ['bar', 2]]` invokes `foo: 1` then `bar: 2`);
 also allows for actioning the same effect multiple times, or to action effects conditionally.
-  ```js
-  {fx: [['db', assoc(db, 'answer', 42)],
-        (db.answer !== 42) && ['alert', "State was updated!"]]}
-  {fx: [['fetch', {url: "/api/foo", onSuccess: ['setFoo']}],
-        ['fetch', {url: "/api/bar", onSuccess: ['setBar']}]]}
-  ```
+```js
+{fx: [['db', assoc(db, 'answer', 42)],
+      (db.answer !== 42) &&
+        ['alert', "State was updated!"]]}
+{fx: [['fetch', {url: "/api/foo", onSuccess: ['setFoo']}],
+      ['fetch', {url: "/api/bar", onSuccess: ['setBar']}]]}
+```
+
 ### [`'dispatchLater'`](https://day8.github.io/re-frame/api-builtin-effects/#dispatch-later) builtin effect
 Dispatches an event after a delay (see `rf.dispatch()`); expects a dict of `{ms, dispatch}`
 (where `ms` is delay time, and `dispatch` is the dispatched event).
 ```js
 {dispatchLater: {dispatch: ['setTitle', "Ready!"], ms: 5000}}
 {dispatchLater: {dispatch: ['setAnswer', 42]}}
+```
+
+### [`'dispatch'`](https://day8.github.io/re-frame/api-builtin-effects/#dispatch) builtin effect
+Shorthand for `dispatchLater` with no `ms` argument. Conveniend to use in `fx`.
+```js
+{dispatch: ['setAnswer', 42]}
+{fx: [['dispatch', ['foo']],
+      ['dispatch', ['bar']]]}
 ```

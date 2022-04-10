@@ -1707,7 +1707,10 @@ module.exports = Vnode
       return reset(appDb, value);
     },
     fx: _fx,
-    dispatchLater: _dispatch
+    dispatchLater: _dispatch,
+    dispatch: (dispatch) => {
+      return _dispatch({dispatch});
+    }
   };
 
   /* Registers an effect handler (implementation of a side-effect) */
@@ -2026,7 +2029,7 @@ module.exports = Vnode
 
 },{"./atom":9,"./util":12}],12:[function(require,module,exports){
 (function() {
-  var assoc, assocIn, dict, entries, eq, eqArr, eqObj, flatten, identity, isArray, isDict, keys, merge, replacer, sorter, type, update;
+  var _dict, _entries, assoc, assocIn, entries, eq, eqArr, eqObj, flatten, getIn, identity, isArray, isDict, keys, merge, replacer, sorter, type, update, vals;
 
   exports.identity = identity = (x) => {
     return x;
@@ -2044,19 +2047,31 @@ module.exports = Vnode
     return Object.keys(x || {});
   };
 
-  exports.entries = entries = Object.entries || ((o) => {
+  exports.vals = vals = (x) => {
+    return Object.values(x || {});
+  };
+
+  _entries = Object.entries || ((o) => {
     return keys(o).map((k) => {
       return [k, o[k]];
     });
   });
 
-  exports.dict = dict = Object.fromEntries || ((kvs) => {
+  exports.entries = entries = (o) => {
+    return _entries(o || {});
+  };
+
+  _dict = Object.fromEntries || ((kvs) => {
     return merge(...kvs.map(([k, v]) => {
       return {
         [k]: v
       };
     }));
   });
+
+  exports.dict = (x) => {
+    return _dict(x || []);
+  };
 
   exports.isArray = isArray = Array.isArray;
 
@@ -2078,9 +2093,11 @@ module.exports = Vnode
     });
   };
 
-  exports.dissoc = (o, k) => {
+  exports.dissoc = (o, ...ks) => {
     o = merge(o);
-    delete o[k];
+    ks.forEach((k) => {
+      return delete o[k];
+    });
     return o;
   };
 
@@ -2088,20 +2105,25 @@ module.exports = Vnode
     return assoc(o, k, f(o != null ? o[k] : void 0, ...args));
   };
 
-  exports.getIn = (o, ks) => {
-    return ks.reduce(((x, k) => {
+  exports.getIn = getIn = (o, path) => {
+    return path.reduce(((x, k) => {
       return x != null ? x[k] : void 0;
     }), o);
   };
 
-  exports.assocIn = assocIn = (o, ks, v) => {
-    if (ks.length < 2) {
-      return assoc(o, ks[0], v);
+  exports.assocIn = assocIn = (o, path, v) => {
+    if (path.length < 2) {
+      return assoc(o, path[0], v);
     } else {
-      return update(o, ks[0], assocIn, ks.slice(1), v);
+      return update(o, path[0], assocIn, path.slice(1), v);
     }
   };
 
+  exports.updateIn = (o, path, f, ...args) => {
+    return assocIn(o, path, f(getIn(o, path), ...args));
+  };
+
+  // dissocIn = (o, path, ...ks) => updateIn o, path, dissoc, ...ks
   exports.chunks = (xs, n) => {
     return Array.from({
       length: Math.ceil(xs.length / n)
@@ -2114,7 +2136,7 @@ module.exports = Vnode
     if (!isArray(xs)) {
       return xs;
     } else {
-      return [].concat(...xs.map(flatten));
+      return xs.flatMap(flatten);
     }
   };
 
@@ -2127,7 +2149,7 @@ module.exports = Vnode
   };
 
   sorter = (o) => {
-    return dict((entries(o)).sort());
+    return _dict((entries(o)).sort());
   };
 
   replacer = (_, v) => {
@@ -2146,8 +2168,10 @@ module.exports = Vnode
     });
   };
 
-  eqObj = (a, b, aks = keys(a), bks = keys(b)) => {
-    return aks.length === bks.length && (eqArr(aks.sort(), bks.sort())) && aks.every((k) => {
+  eqObj = (a, b, aks = keys(a), bks = new Set(keys(b))) => {
+    return aks.length === bks.size && aks.every((k) => {
+      return bks.has(k);
+    }) && aks.every((k) => {
       return eq(a[k], b[k]);
     });
   };

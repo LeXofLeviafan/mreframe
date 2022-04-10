@@ -13,6 +13,9 @@ _interceptor = (x) -> merge {id: undefined, before: identity, after: identity}, 
 _pathKey = 're-frame-path/db-store'
 
 $db = -> deref rf.appDb
+$noop = ->
+  rf.regEventCtx 'noop', identity  # no effects dict is added (equivalent to FN handler returning nil value)
+  -> rf.dispatchSync ['noop']
 $dbUpdates = ->
   rf.regEventCtx 'reset-db', (context) -> rf.assocEffect context, 'db', {}
   rf.regEventCtx 'assoc-in', (context) ->
@@ -289,6 +292,7 @@ o.spec "mreframe/re-frame", ->
       .deepEquals(foo: {bar: 'baz', answer: 42})	"appDb is updated again"
     $resetDb()
     o( $db() ).deepEquals({})				"appDb was reset"
+    o( $noop() ).notThrows(TypeError)			"nil effects dict is a valid change"
 
   o "dispatch()", ->
     {$resetDb} = $dbUpdates()
@@ -568,6 +572,16 @@ o.spec "mreframe/re-frame", ->
       delay 20
     .then ->
       o(log.callCount).equals(2)			"event dispatched after specified delay"
+
+  o "dispatch builtin effect", ->
+    log = o.spy()
+    rf.regFx 'log', log
+    rf.regEventFx 'log', [rf.unwrap], (_, msg) -> log: msg
+    rf.regEventFx 'schedule', [rf.unwrap], (_, params) -> dispatch: params
+    rf.dispatchSync ['schedule', ['log', "Foo"]]
+    o(log.callCount).equals(0)				"no immediate effect"
+    delay().then ->
+      o(log.callCount).equals(1)			"event dispatched after delay"
 
   o "dsub()", ->
     {$resetDb, $assocIn} = $dbUpdates()

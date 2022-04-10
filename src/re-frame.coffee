@@ -199,9 +199,10 @@ exports.dispatch = dispatch = (dispatch) => _dispatch {dispatch}
 
 _fx = (fxs, fx=deref effects) => fxs.filter(identity).forEach ([k, v]) => (fx[k] or _effects[k]) v
 _effects = # builtin effects
-  db: (value) => reset appDb, value
-  fx: _fx
+  db:            (value) => reset appDb, value
+  fx:            _fx
   dispatchLater: _dispatch
+  dispatch:      (dispatch) => _dispatch {dispatch}
 
 ### Registers an effect handler (implementation of a side-effect) ###
 exports.regFx = (id, handler) => swap effects, assoc, id, handler;  undefined

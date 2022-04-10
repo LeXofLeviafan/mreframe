@@ -1,5 +1,6 @@
 [o, util] = ['ospec', '../src/util'].map require
-{identity, type, keys, entries, dict, merge, assoc, dissoc, update, getIn, assocIn, chunks, flatten, repr, eq, chain, multi} = util
+{identity, type, keys, vals, entries, dict, merge, assoc, dissoc, update, getIn,
+ assocIn, updateIn, chunks, flatten, repr, eq, chain, multi} = util
 
 o.spec "mreframe/util", ->
 
@@ -35,6 +36,16 @@ o.spec "mreframe/util", ->
     o(keys null).deepEquals([])				"works on null"
     o( keys() ).deepEquals([])				"works on undefined"
 
+  o "vals()", ->
+    o(vals {}).deepEquals([])				"works on empty objects"
+    o(vals foo: 'bar').deepEquals(['bar'])		"works on single-key objects"
+    o( vals(foo: 1, bar: 2, baz: 3).sort() )
+      .deepEquals([1, 2, 3])				"works on multi-key objects"
+    o(vals "foo").deepEquals(['f', 'o', 'o'])		"works on strings"
+    o(vals ['foo', 'bar']).deepEquals(['foo', 'bar'])	"works on arrays"
+    o(vals null).deepEquals([])				"works on null"
+    o( vals() ).deepEquals([])				"works on undefined"
+
   o "entries()", ->
     a = foo: 1, bar: 2, baz: 3
     b = foo: 1, bar: 2, baz: 3
@@ -44,8 +55,8 @@ o.spec "mreframe/util", ->
     o(entries {}).deepEquals([])			"works on empty dicts"
     o(entries ['a', 'b'])
       .deepEquals([['0', 'a'], ['1', 'b']])		"works on lists"
-    o(-> entries null).throws(TypeError)		"doesn't support null"
-    o(-> entries()).throws(TypeError)			"doesn't support undefined"
+    o(entries null).deepEquals([])			"works on null"
+    o( entries() ).deepEquals([])			"works on undefined"
 
   o "dict()", ->
     a = foo: 1, bar: 2, baz: 3
@@ -53,8 +64,8 @@ o.spec "mreframe/util", ->
     o(dict b).deepEquals(a)				"works"
     o(b).deepEquals(entries a)				"doesn't mutate arguments"
     o(dict []).deepEquals({})				"works on empty lists"
-    o(-> dict null).throws(TypeError)			"doesn't support null"
-    o(-> dict()).throws(TypeError)			"doesn't support undefined"
+    o(dict null).deepEquals({})				"works on null"
+    o(dict()).deepEquals({})				"works on undefined"
 
   for [check, value] in [['isArray', Array], ['isDict', Object], ['isFn', Function]]
     do (check, value) -> o "#{check}()", ->
@@ -88,9 +99,10 @@ o.spec "mreframe/util", ->
     o(assoc undefined, 'foo', 42).deepEquals(foo: 42)	"works on undefined"
 
   o "dissoc()", ->
-    a = foo: 1, bar: 1.5
+    a = foo: 1, bar: 1.5, answer: 42
     b = merge a
-    o(dissoc a, 'bar').deepEquals(foo: 1)		"works"
+    o(dissoc a, 'bar').deepEquals(foo: 1, answer: 42)	"works with a single key"
+    o(dissoc a, 'bar', 'answer').deepEquals(foo: 1)	"works with multiple keys"
     o(a).deepEquals(b)					"doesn't mutate arguments"
     o(dissoc a, 'baz').deepEquals(a)			"works on nonexisting keys"
     o(dissoc null, 'foo').deepEquals({})		"works on null"
@@ -137,6 +149,30 @@ o.spec "mreframe/util", ->
       .deepEquals(foo: bar: 'X')			"works on undefined"
     o(assocIn a, [], 'X')
       .deepEquals(foo: {bar: baz: 42}, undefined: 'X')	"on empty path sets 'undefined' key"
+
+  o "updateIn()", ->
+    inc = (n) -> n + 1
+    sub = (n, m) -> n - m
+    a = foo: bar: baz: 42
+    b = foo: bar: baz: 42
+    o(a).deepEquals(b)
+    o(updateIn a, ['foo', 'bar', 'baz'], inc)
+      .deepEquals(foo: bar: baz: 43)			"returns a dict with updated deep field"
+    o(a).deepEquals(b)					"doesn't mutate the dict"
+    o(updateIn a, ['foo', 'bar', 'baz'], sub, 1)
+      .deepEquals(foo: bar: baz: 41)			"passes value as the first argument"
+    o(updateIn a, ['foo', 'baz', 'bar'], -> 'X')
+      .deepEquals(foo: bar: {baz: 42}, baz: {bar: 'X'})	"works on nonexistent paths"
+    o(updateIn a, ['foo'], -> 'X').deepEquals(foo: 'X')	"replaces paths"
+    o(updateIn null, ['foo'], -> 'X')
+      .deepEquals(foo: 'X')				"works on null"
+    o(updateIn undefined, ['foo', 'bar'], -> 'X')
+      .deepEquals(foo: bar: 'X')			"works on undefined"
+    o(updateIn a, [], -> 'X')
+      .deepEquals(foo: {bar: baz: 42}, undefined: 'X')	"on empty path sets 'undefined' key"
+    c = foo: bar: {baz: 42}, baz: {bar: 'X'}
+    o(updateIn c, ['foo'], dissoc, 'baz')
+      .deepEquals(a)					"dissocIn = (o, path, ...ks) => updateIn(o, path, dissoc, ...ks)"
 
   o "chunks()", ->
     a = [1, 2, 3, 4, 5]
@@ -194,6 +230,10 @@ o.spec "mreframe/util", ->
       .equals(true)					"works on nested lists [3]"
     o(eq {foo: [1], bar: [2]}, {foo: [2], bar: [1]})
       .equals(false)					"works on nested lists [4]"
+    o(eq null, null).equals(true)			"works on null"
+    o(eq undefined, undefined).equals(true)		"works on undefined"
+    o(eq null, undefined).equals(false)			"null is not equal to undefined"
+    o(eq NaN, NaN).equals(true)				"works on NaN (all values are equal to themselves)"
 
   o "chain()", ->
     a = foo: 1, bar: 2, baz: 3

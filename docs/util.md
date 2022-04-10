@@ -31,15 +31,25 @@ keys(null)                      // ⇒ []
 keys(void 0)                    // ⇒ []
 ```
 
+### [`vals (o)`](https://clojuredocs.org/clojure.core/vals)
+Returns vals of its argument (same as `Object.values(x)` except it doesn't fail on nil values);
+in case of an `Array` its `vals` are simply its items.
+```js
+vals({foo: 1, bar: 2, baz: 3})  // ⇒ ['foo', 'bar', 'baz']
+vals(['a', 'b', 'c'])           // ⇒ ['0', '1', '2']
+vals(null)                      // ⇒ []
+vals(void 0)                    // ⇒ []
+```
+
 ### `entries (o)`
-Returns key-value pairs of its argument in unspecified order (same as `Object.entries`).
+Returns key-value pairs of its argument in unspecified order (same as `Object.entries` except it doesn't fail on nil values).
 ```js
 entries({foo: 1, bar: 2, baz: 3}) // ⇒ [['foo', 1], ['bar', 2], ['baz', 3]]
 entries(['a', 'b', 'c'])          // ⇒ [['0', 'a'], ['1', 'b'], ['2', 'c']]
 ```
 
 ### `dict (kvs)`
-Returns a dictionary built from provided key-value pairs (same as `Object.fromEntries`).
+Returns a dictionary built from provided key-value pairs (same as `Object.fromEntries` except it doesn't fail on nil values).
 ```js
 dict([['foo', 1], ['bar', 2], ['baz', 3]])  // ⇒ {foo: 1, bar: 2, baz: 3}
 ```
@@ -87,11 +97,11 @@ assoc({foo: 1, bar: 2}, 'foo', 3) // ⇒ {foo: 3, bar: 2}
 assoc(null, 'answer', 42)         // ⇒ {answer: 42}
 ```
 
-### [`dissoc (o, k)`](https://clojuredocs.org/clojure.core/dissoc)
-Returns a copy of dictionary `o` without the key `k`.
+### [`dissoc (o, ...ks)`](https://clojuredocs.org/clojure.core/dissoc)
+Returns a copy of dictionary `o` without the keys `ks`.
 ```js
-dissoc({foo: 1, bar: 2, baz: 3}, 'bar') // ⇒ {foo: 1, baz: 3}
-dissoc(null, 'foo')                     // ⇒ {}
+dissoc({foo: 1, bar: 2, baz: 3}, 'bar', 'baz') // ⇒ {foo: 1}
+dissoc(null, 'foo')                            // ⇒ {}
 ```
 
 ### [`update (o, k, f, ...args)`](https://clojuredocs.org/clojure.core/update)
@@ -122,6 +132,17 @@ assocIn({foo: {bar: 1}}, ['foo', 'bar'], 42)  // ⇒ {foo: {bar: 42}}
 assocIn([{answer: 12}], [0, 'answer'], 42)    // ⇒ {0: {answer: 42}}
 assocIn({foo: {bar: 1}}, ['baz', 'bar'], 42)  // ⇒ {foo: {bar: 1}, baz: {bar: 42}}
 assocIn(null, ['foo', 'bar'], 42)             // ⇒ {foo: {bar: 42}}
+```
+
+### [`updateIn (o, path, f, ...args)`](https://clojuredocs.org/clojure.core/update-in)
+Returns a copy of dictionary `o` with the value for `getIn(it, path)` set to `f(v, ...args)` (where `v` is the previous value);
+if part of the path is missing, an empty dict is provided instead (thus, `path` is guaranteed to exist).
+```js
+updateIn({foo: {bar: 1}}, ['foo', 'bar'], n => n+1)          // ⇒ {foo: {bar: 2}}
+updateIn([{answer: 12}], [0, 'answer'], ((a, b) => a-b), 2)  // ⇒ {0: {answer: 10}}
+updateIn({foo: {bar: 1}}, ['baz', 'bar'], () => 42)          // ⇒ {foo: {bar: 1}, baz: {bar: 42}}
+updateIn(null, ['foo', 'bar'], () => 42)                     // ⇒ {foo: {bar: 42}}
+let dissocIn = (o, path, ...ks) => updateIn(o, path, dissoc, ...ks);
 ```
 
 ### [`chunks (xs, n)`](https://clojuredocs.org/clojure.core/partition-all)

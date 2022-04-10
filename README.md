@@ -1,3 +1,15 @@
+`mreframe` is a plain JavaScript re-implementation of [`reagent`](http://reagent-project.github.io) and
+[`re-frame`](https://day8.github.io/re-frame) libraries from [ClojureScript](https://clojurescript.org);
+it's a mini-framework for single-page apps (using Mithril as the base renderer, with some interop).
+
+Install: `npm i mreframe` or `<script src="https://unpkg.com/mreframe/dist/mreframe.min.js"></script>`.
+
+* [Intro](#intro)
+* [Usage](#usage)
+* [Examples](#examples)
+* [API reference](#api-reference)
+
+
 # Intro
 
 [ClojureScript](https://clojurescript.org) has a very good functional interface to React (as third party libraries),
@@ -32,6 +44,7 @@ For further information, I suggest checking out the original (ClojureScript) [`r
 and [`re-frame`](https://day8.github.io/re-frame/re-frame) libraries documentation. Code examples specific to `mreframe` can
 be found in the following Examples section, as well as in the API reference.
 
+
 # Usage
 
 Install the NPM package into a project with `npm i mreframe`/`yarn add mreframe`;  
@@ -53,12 +66,14 @@ rf._init({eq: _.eq});
 `_init` is exposed by `reagent` submodule (affects only the submodule itself), and also by `re-frame` and the main module
 (affects both `re-frame` and `reagent` submodules).
 
+
 # Examples
 
 * [Reagent form-2 components + Reagent/Mithril interop](examples/reagent.js.html) (scripted in JavaScript)
 * [Re-frame state/side-effects management with Reagent components](examples/re-frame.coffee.html) (scripted in CoffeeScript)
 * [Routing using `m.route` (from external Mithril bundle, connected via `_init`)](examples/route.wisp.html) (scripted in Wisp)
 * [Rendering HTML from Reagent components using `mithril-node-render`](examples/node-render.coffee) (scripted in CoffeeScript)
+
 
 # API reference
 
@@ -108,7 +123,7 @@ using `mreframe` with Wisp makes for mostly identical code to that of CLJS
   - unregistering function for development ([`rf.clearFx`](docs/re-frame.md#clearFx-id)),
   - helper function [`rf.disp`](docs/re-frame.md#disp-event-args) (for dispatching `onSuccess`/`onFailure` events),
   - builtin effects ([`db`](docs/re-frame.md#db-builtin-effect), [`fx`](docs/re-frame.md#fx-builtin-effect),
-    [`dispatchLater`](docs/re-frame.md#dispatchLater-builtin-effect));
+    [`dispatchLater`](docs/re-frame.md#dispatchLater-builtin-effect), [`dispatch`](docs/re-frame.md#dispatch-builtin-effect));
 * interceptors (‘wrappers’ that alter event processing when used in event registering function):
   - creator function ([`rf.toInterceptor`](docs/re-frame.md#toInterceptor-id-before-after)),
   - predefined interceptors ([`rf.unwrap`](docs/re-frame.md#unwrap), [`rf.trimV`](docs/re-frame.md#trimV)) and generators
@@ -158,9 +173,10 @@ using `mreframe` with Wisp makes for mostly identical code to that of CLJS
 * type check functions ([`type`](docs/util.md#type-x), [`isArray`](docs/util.md#isArray-x), [`isDict`](docs/util.md#isDict-x),
   [`isFn`](docs/util.md#isFn-x));
 * functions for arrays ([`chunks`](docs/util.md#chunks-xs-n), [`flatten`](docs/util.md#flatten-xs));
-* functions for dicts ([`dict`](docs/util.md#dict-kvs), [`entries`](docs/util.md#entries-o), [`keys`](docs/util.md#keys-o));
+* functions for dicts ([`dict`](docs/util.md#dict-kvs), [`entries`](docs/util.md#entries-o), [`keys`](docs/util.md#keys-o),
+  [`vals`](docs/util.md#vals-o));
 * functions manipulating collections ([`merge`](docs/util.md#merge-os), [`assoc`](docs/util.md#assoc-o-k-v),
-  [`dissoc`](docs/util.md#dissoc-o-k), [`update`](docs/util.md#update-o-k-f-args), [`getIn`](docs/util.md#getIn-o-path),
-  [`assocIn`](docs/util.md#assocIn-o-path-v));
+  [`dissoc`](docs/util.md#dissoc-o-ks), [`update`](docs/util.md#update-o-k-f-args), [`getIn`](docs/util.md#getIn-o-path),
+  [`assocIn`](docs/util.md#assocIn-o-path-v), [`updateIn`](docs/util.md#updateIn-o-path-v));
 * a simple [multimethods](https://clojure.org/reference/multimethods) implementation
   ([`multi`](docs/util.md#multi-dispatchIdentity)).
