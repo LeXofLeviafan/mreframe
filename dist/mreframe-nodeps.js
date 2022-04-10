@@ -59,12 +59,12 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
      :queue     "a collection of further interceptors"
      :stack     "a collection of interceptors already walked"}
   */
-  var _calcSignals, _calcSub, _clear, _ctxEvt, _dispatch, _effects, _eq_, _eventQueue, _fx, _getDb, _getX, _initReagent, _intercept, _invalidSignals, _pathKey, _replaceEvent, _restoreEvent, _signals, _subscriptionCache, appDb, assoc, assocCoeffect, assocEffect, assocIn, chain, chunks, clearEvent, coeffects, cursor, deref, dict, dispatch, dispatchSync, dissoc, effects, entries, eq, events, flatten, getCoeffect, getEffect, getIn, identity, isArray, isDict, isFn, keys, merge, ratom, regEventCtx, regEventFx, repr, reset, subscribe, subscriptions, swap, toInterceptor, update,
+  var _calcSignals, _calcSub, _clear, _ctxEvt, _cursors, _deref, _dispatch, _duplicate, _effects, _eq_, _eventQueue, _fx, _getDb, _getX, _initReagent, _intercept, _invalidSignals, _noHandler, _pathKey, _replaceEvent, _restoreEvent, _signals, _subscriptionCache, appDb, assoc, assocCoeffect, assocEffect, assocIn, atom, chain, chunks, clearEvent, coeffects, cursor, deref, dict, dispatch, dispatchSync, dissoc, effects, entries, eq, eqShallow, events, flatten, getCoeffect, getEffect, getIn, identical, identity, isArray, isDict, isFn, keys, merge, ratom, regEventCtx, regEventFx, repr, reset, subscribe, subscriptions, swap, toInterceptor, update,
     splice = [].splice;
 
-  ({eq, keys, dict, entries, isArray, isDict, isFn, getIn, merge, assoc, assocIn, dissoc, update, repr, identity, chunks, flatten, chain} = require('./util'));
+  ({identical, eq, eqShallow, keys, dict, entries, isArray, isDict, isFn, getIn, merge, assoc, assocIn, dissoc, update, repr, identity, chunks, flatten, chain} = require('./util'));
 
-  ({deref, reset, swap} = require('./atom'));
+  ({atom, deref, reset, swap} = require('./atom'));
 
   ({
     _init: _initReagent,
@@ -83,13 +83,21 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
   /* Application state atom */
   exports.appDb = appDb = ratom({});
 
-  events = ratom({});
+  events = atom({});
 
-  effects = ratom({});
+  effects = atom({});
 
-  coeffects = ratom({});
+  coeffects = atom({});
 
-  subscriptions = ratom({});
+  subscriptions = atom({});
+
+  _noHandler = (kind, [key]) => {
+    return console.error(`re-frame: no ${kind} handler registered for: '${key}'`);
+  };
+
+  _duplicate = (kind, key) => {
+    return console.warn(`re-frame: overwriting ${kind} handler for: '${key}'`);
+  };
 
   _subscriptionCache = new Map();
 
@@ -118,7 +126,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
   };
 
   _invalidSignals = () => {
-    throw SyntaxError("Invalid subscription signals");
+    throw SyntaxError("re-frame: invalid subscription signals");
   };
 
   _signals = (signals) => {
@@ -142,14 +150,18 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     }
   };
 
+  _deref = (ratom) => {
+    return ratom._deref(); // parent ratom is not to be propagated
+  };
+
   _calcSignals = (signals) => {
     if (isArray(signals)) {
-      return signals.map(deref);
+      return signals.map(_deref);
     } else if (!isDict(signals)) {
-      return deref(signals);
+      return _deref(signals);
     } else {
       return dict(entries(signals).map(([k, v]) => {
-        return [k, deref(v)];
+        return [k, _deref(v)];
       }));
     }
   };
@@ -161,6 +173,9 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     signals = signals.length === 0 ? () => {
       return appDb;
     } : signals.length !== 1 ? _signals(chunks(signals, 2)) : isFn(signals[0]) ? signals[0] : _invalidSignals();
+    if ((deref(subscriptions))[id]) {
+      _duplicate("subscription", id);
+    }
     swap(subscriptions, assoc, id, [signals, computation]);
     return void 0;
   };
@@ -168,11 +183,10 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
   _calcSub = (signals, computation) => {
     return (query) => {
       var input, input_, key, output, x;
-      key = repr(query);
       input = _calcSignals(signals(query));
-      if (_subscriptionCache.has(key)) {
+      if (_subscriptionCache.has(key = repr(query))) {
         [input_, output] = _subscriptionCache.get(key);
-        if (_eq_(input, input_)) {
+        if (eqShallow(input, input_)) {
           return output;
         }
       }
@@ -182,13 +196,28 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     };
   };
 
+  _cursors = new Map();
+
   /* Returns an RCursor that derefs to subscription result (or cached value) */
   exports.subscribe = subscribe = (query) => {
-    return cursor(_calcSub(...deref(subscriptions)[query[0]]), query);
+    var it, key;
+    if (!(it = (deref(subscriptions))[query[0]])) {
+      return _noHandler("subscription", query);
+    } else {
+      if (!_cursors.has(key = repr(query))) {
+        _cursors.set(key, cursor(_calcSub(...it), query));
+      }
+      return _cursors.get(key);
+    }
   };
 
   /* Unregisters one or all subscription functions */
-  exports.clearSub = _clear(subscriptions);
+  exports.clearSub = ((_clearSubs) => {
+    return (id) => {
+      id || _cursors.clear();
+      return _clearSubs(id);
+    };
+  })(_clear(subscriptions));
 
   /*
     Produces an interceptor (changed from varargs to options object).
@@ -331,9 +360,9 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
             return getIn(db, path);
           });
         });
-        if (!(outs.some((x, i) => {
-          return x !== ins[i];
-        }))) {
+        if (outs.every((x, i) => {
+          return identical(x, ins[i]);
+        })) {
           return context;
         } else {
           return assocEffect(context, 'db', assocIn(db1, outPath, f(...outs)));
@@ -344,6 +373,9 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
   /* Registers a coeffect handler (for use as an interceptor) */
   exports.regCofx = (id, handler) => {
+    if ((deref(coeffects))[id]) {
+      _duplicate("coeffect", id);
+    }
     swap(coeffects, assoc, id, handler);
     return void 0;
   };
@@ -353,7 +385,13 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     return toInterceptor({
       id: key,
       before: (context) => {
-        return update(context, 'coeffects', (deref(coeffects))[key], arg);
+        var it;
+        if ((it = (deref(coeffects))[key])) {
+          return update(context, 'coeffects', (deref(coeffects))[key], arg);
+        } else {
+          _noHandler("coeffect", [key]);
+          return context;
+        }
       }
     });
   };
@@ -394,6 +432,9 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     if (!handler) {
       [interceptors, handler] = [[], interceptors];
     }
+    if ((deref(events))[id]) {
+      _duplicate("event", id);
+    }
     swap(events, assoc, id, [flatten(interceptors.filter(identity)), handler]);
     return void 0;
   };
@@ -421,16 +462,20 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
   /* Dispatches an event (running back and forth through interceptor chain & handler then actions effects) */
   exports.dispatchSync = dispatchSync = (event) => {
-    var context, handler, stack;
-    [stack, handler] = deref(events)[event[0]];
-    context = {
-      stack,
-      coeffects: {
-        event,
-        db: deref(appDb)
-      }
-    };
-    return chain(context, [_intercept, 'before'], handler, [_intercept, 'after'], getEffect, entries, _fx);
+    var context, handler, it, stack;
+    if (!(it = (deref(events))[event[0]])) {
+      return _noHandler("event", event);
+    } else {
+      [stack, handler] = it;
+      context = {
+        stack,
+        coeffects: {
+          event,
+          db: _deref(appDb)
+        }
+      };
+      return chain(context, [_intercept, 'before'], handler, [_intercept, 'after'], getEffect, entries, _fx);
+    }
   };
 
   _dispatch = ({ms, dispatch}) => {
@@ -449,13 +494,20 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
   _fx = (fxs, fx = deref(effects)) => {
     return fxs.filter(identity).forEach(([k, v]) => {
-      return (fx[k] || _effects[k])(v);
+      var it;
+      if ((it = fx[k] || _effects[k])) {
+        return it(v);
+      } else {
+        return _noHandler("effect", [k]);
+      }
     });
   };
 
   _effects = { // builtin effects
     db: (value) => {
-      return reset(appDb, value);
+      if (!_eq_(value, _deref(appDb))) {
+        return reset(appDb, value);
+      }
     },
     fx: _fx,
     dispatchLater: _dispatch,
@@ -466,6 +518,9 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
   /* Registers an effect handler (implementation of a side-effect) */
   exports.regFx = (id, handler) => {
+    if ((deref(effects))[id]) {
+      _duplicate("effect", id);
+    }
     swap(effects, assoc, id, handler);
     return void 0;
   };
@@ -487,9 +542,9 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
 },{"./atom":"mreframe/atom","./reagent":"mreframe/reagent","./util":"mreframe/util"}],"mreframe/reagent":[function(require,module,exports){
 (function() {
-  var None, RAtom, RCursor, _cursor, _eq_, _fnElement, _fragment_, _meta, _mithril_, _mount_, _redraw_, _renderCache, _vnode, argv, asElement, assoc, assocIn, atom, calcCssClass, children, classNames, createElement, deref, eq, getIn, identity, isArray, isDict, isFn, keys, merge, props, ratom, reset, second, stateAtom, swap, type;
+  var RAtom, RCursor, _createElement, _cursor, _detectChanges, _eqArgs, _fnElement, _fragment_, _meta, _mithril_, _mount_, _moveParent, _propagate, _quiet, _quietEvents, _redraw_, _renderCache, _rendering, _vnode, argv, asElement, assocIn, atom, children, classNames, deref, eqShallow, getIn, identical, identity, isArray, keys, merge, prepareAttrs, props, ratom, reset, second, stateAtom, swap;
 
-  ({eq, type, isArray, isDict, isFn, keys, getIn, merge, assoc, assocIn, identity} = require('./util'));
+  ({identical, eqShallow, isArray, keys, getIn, merge, assocIn, identity} = require('./util'));
 
   ({atom, deref, reset, swap} = require('./atom'));
 
@@ -499,18 +554,15 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     return b;
   };
 
-  _eq_ = eq;
-
   exports._init = (opts) => {
     _mithril_ = (opts != null ? opts.hyperscript : void 0) || _mithril_;
     _fragment_ = _mithril_.fragment || second;
     _redraw_ = (opts != null ? opts.redraw : void 0) || _redraw_;
     _mount_ = (opts != null ? opts.mount : void 0) || _mount_;
-    _eq_ = (opts != null ? opts.eq : void 0) || _eq_;
     return void 0;
   };
 
-  _vnode = atom(); // contains vnode of most recent component
+  _vnode = null; // contains vnode of most recent component
 
   _renderCache = new Map();
 
@@ -519,59 +571,113 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     return _renderCache.clear();
   };
 
+  _propagate = (vnode, ratom, value) => {
+    while (vnode) {
+      vnode.state._subs.set(ratom, value);
+      vnode = vnode._parent;
+    }
+    return value;
+  };
+
+  _eqArgs = (xs, ys) => {
+    return (!xs && !ys) || ((xs != null ? xs.length : void 0) === (ys != null ? ys.length : void 0) && xs.every((x, i) => {
+      return eqShallow(x, ys[i]);
+    }));
+  };
+
+  _detectChanges = function(vnode) {
+    var subs;
+    return !_eqArgs(vnode.attrs.argv, this._argv) || ((subs = Array.from(this._subs)).some(([ratom, value]) => {
+      return ratom._deref() !== value;
+    })) || (subs.forEach(([ratom, value]) => {
+      return _propagate(vnode._parent, ratom, value);
+    }), false); // no changes, propagating ratoms
+  };
+
+  _rendering = (binding) => {
+    return function(vnode) {
+      _vnode = vnode;
+      try {
+        this._subs.clear();
+        this._argv = vnode.attrs.argv; // last render args
+        return binding.call(this, vnode);
+      } finally {
+        _vnode = null;
+      }
+    };
+  };
+
   _fnElement = (fcomponent) => {
     var component;
     if (!_renderCache.has(fcomponent)) {
       component = {
-        oninit: (vnode) => {
-          vnode.state._comp = component;
-          vnode.state._atom = ratom();
+        oninit: function(vnode) {
+          this._comp = component; // self
+          this._subs = new Map(); // input ratoms (resets before render)
+          this._atom = ratom(); // state ratom;  ._subs should work for it as well
+          this._view = fcomponent;
           return void 0;
         },
-        view: (vnode) => {
+        onbeforeupdate: _detectChanges,
+        view: _rendering(function(vnode) {
           var args, x;
-          reset(_vnode, vnode);
-          args = (argv(vnode)).slice(1);
-          x = (vnode.state._view || fcomponent)(...args);
-          return asElement(!isFn(x) ? x : (vnode.state._view = x, x(...args)));
-        }
+          x = this._view.apply(vnode, (args = vnode.attrs.argv.slice(1)));
+          return asElement(typeof x !== 'function' ? x : (this._view = x).apply(vnode, args));
+        })
       };
       _renderCache.set(fcomponent, component);
     }
     return _renderCache.get(fcomponent);
   };
 
-  _meta = (meta, args) => {
-    if (isDict(args[0])) {
-      return [merge(args[0], meta), ...args.slice(1)];
+  _meta = (meta, o) => {
+    if (typeof o === 'object' && !isArray(o)) {
+      return [merge(o, meta)];
     } else {
-      return [meta, ...args];
+      return [meta, asElement(o)];
     }
+  };
+
+  _moveParent = (vnode) => {
+    if (vnode.attrs) {
+      vnode._parent = vnode.attrs._parent || null; // might be undefined if not called directly from a component
+      delete vnode.attrs._parent;
+    }
+    return vnode;
   };
 
   /* Converts Hiccup forms into Mithril vnodes */
   exports.asElement = asElement = (form) => {
-    var head, meta, tail;
-    if (!isArray(form)) {
-      return form;
-    } else {
-      [head, ...tail] = form;
-      meta = form._meta || {};
+    var head, meta;
+    if (isArray(form)) {
+      head = form[0];
+      meta = {
+        ...(form._meta || {}),
+        _parent: _vnode
+      };
       if (head === '>') {
-        return createElement(tail[0], ...(_meta(meta, tail.slice(1))).map(asElement));
+        return _createElement(form[1], _meta(meta, form[2]), form.slice(3).map(asElement));
       } else if (head === '<>') {
-        return _fragment_(meta, tail.map(asElement));
-      } else if (type(head) === String) {
-        return createElement(head, ...(_meta(meta, tail)).map(asElement));
-      } else if (isFn(head)) {
-        return createElement(_fnElement(head), merge(meta, {
-          argv: form
-        }));
+        return _moveParent(_fragment_(meta, form.slice(1).map(asElement)));
+      } else if (typeof head === 'string') {
+        return _createElement(head, _meta(meta, form[1]), form.slice(2).map(asElement));
+      } else if (typeof head === 'function') {
+        return _createElement(_fnElement(head), [
+          {
+            ...meta,
+            argv: form
+          }
+        ]);
       } else {
-        return createElement(head, merge(meta, {
-          argv: form
-        }));
+        return _createElement(head, [
+          {
+            ...meta,
+            argv: form
+          }
+        ]);
       }
+    } else {
+      return form;
     }
   };
 
@@ -598,57 +704,59 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     componentWillUnmount, shouldComponentUpdate, render, reagentRender (use symbols in Wisp).
     Also, beforeComponentUnmounts was added (see 'onbeforeremove' in Mithril).
     Instead of 'this', vnode is passed in calls.
+    NOTE: shouldComponentUpdate overrides Reagent changes detection
   */
   exports.createClass = (spec) => {
-    var call, component;
-    call = (k, vnode, args) => {
-      if (spec[k]) {
-        reset(_vnode, vnode);
-        return spec[k].apply(vnode, args || [vnode]);
-      }
+    var bind, component;
+    bind = (k, method = spec[k]) => {
+      return method && ((vnode, args) => {
+        _vnode = vnode;
+        try {
+          return method.apply(vnode, args || [vnode]);
+        } finally {
+          _vnode = null;
+        }
+      });
     };
     return component = {
-      oninit: (vnode) => {
-        vnode.state._comp = component;
-        vnode.state._atom = ratom(call('getInitialState', vnode));
-        return call('constructor', vnode, [vnode, props(vnode)]);
-      },
-      oncreate: (vnode) => {
-        return call('componentDidMount', vnode);
-      },
-      onupdate: (vnode) => {
-        return call('componentDidUpdate', vnode);
-      },
-      onremove: (vnode) => {
-        return call('componentWillUnmount', vnode);
-      },
-      onbeforeupdate: (vnode) => {
-        return call('shouldComponentUpdate', vnode);
-      },
-      onbeforeremove: (vnode) => {
-        return call('beforeComponentUnmounts', vnode);
-      },
-      view: (vnode) => {
-        if (spec.render) {
-          return call('render', vnode);
-        } else {
-          return asElement(call('reagentRender', vnode, (argv(vnode)).slice(1)));
+      oninit: function(vnode) {
+        var base, base1;
+        this._comp = component;
+        this._subs = new Map();
+        this._atom = ratom(typeof (base = bind('getInitialState')) === "function" ? base(vnode) : void 0);
+        if (typeof (base1 = bind('constructor')) === "function") {
+          base1(vnode, [vnode, vnode.attrs]);
         }
-      }
+        return void 0;
+      },
+      oncreate: bind('componentDidMount'),
+      onupdate: bind('componentDidUpdate'),
+      onremove: bind('componentWillUnmount'),
+      onbeforeupdate: bind('shouldComponentUpdate') || _detectChanges,
+      onbeforeremove: bind('beforeComponentUnmounts'),
+      view: _rendering(spec.render || ((render) => {
+        return function(vnode) {
+          return asElement(render.apply(vnode, vnode.attrs.argv.slice(1)));
+        };
+      })(spec.reagentRender))
     };
   };
 
   RAtom = function(x1) {
     this.x = x1;
+    this._deref = (() => {
+      return this.x;
+    });
+    return void 0; // ._deref doesn't cause propagation
   };
 
   deref.when(RAtom, (self) => {
-    return self.x;
+    return _propagate(_vnode, self, self._deref());
   });
 
   reset.when(RAtom, (self, value) => {
-    if (_eq_(value, self.x)) {
-      return self.x;
+    if (identical(value, self.x)) {
+      return value;
     } else {
       self.x = value;
       _redraw_();
@@ -661,31 +769,22 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     return new RAtom(x);
   };
 
-  None = {};
-
-  _cursor = (ratom) => {
-    return (path, value = None) => {
-      if (value === None) {
-        return getIn(deref(ratom), path);
-      } else {
-        return swap(ratom, assocIn, path, value);
-      }
-    };
-  };
-
   RCursor = function(src1, path1) {
     this.src = src1;
     this.path = path1;
+    this._deref = (() => {
+      return this.src(this.path);
+    });
+    return void 0;
   };
 
   deref.when(RCursor, (self) => {
-    return self.src(self.path);
+    return _propagate(_vnode, self, self._deref());
   });
 
   reset.when(RCursor, (self, value) => {
-    var x;
-    if (_eq_(value, (x = deref(self)))) {
-      return x;
+    if (identical(value, self._deref())) {
+      return value;
     } else {
       self.src(self.path, value);
       _redraw_();
@@ -693,9 +792,19 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     }
   });
 
-  /* Produces a cursor (sub-state atom) from a path and either an atom or a getter/setter function */
+  _cursor = (ratom) => {
+    return (path, value) => { // value is optional but undefined would be replaced with fallback value anyway
+      if (value === void 0) {
+        return getIn(ratom._deref(), path);
+      } else {
+        return swap(ratom, assocIn, path, value);
+      }
+    };
+  };
+
+  /* Produces a cursor (sub-state atom) from a path and either a r.atom or a getter/setter function */
   exports.cursor = (src, path) => {
-    return new RCursor((isFn(src) ? src : _cursor(src)), path);
+    return new RCursor((typeof src === 'function' ? src : _cursor(src)), path);
   };
 
   /* Converts a Mithril component into a Reagent component */
@@ -709,36 +818,65 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
   exports.classNames = classNames = (...classes) => {
     var cls;
     cls = classes.reduce(((o, x) => {
-      if (!(isArray(x) || isDict(x))) {
+      if (typeof x !== 'object') {
         x = `${x}`.split(' ');
       }
-      return merge(o, (isDict(x) ? x : merge(...x.map((k) => {
+      return merge(o, (!isArray(x) ? x : merge(...x.map((k) => {
         return k && {
           [k]: k
         };
       }))));
     }), {});
-    return (keys(cls)).map((k) => {
-      return cls[k] && k;
-    }).filter(identity).join(' ');
+    return (keys(cls)).filter((k) => {
+      return cls[k];
+    }).join(' ');
   };
 
-  calcCssClass = (props) => {
-    return ['class', 'className', 'classList'].reduce(((o, k) => {
-      return assoc(o, k, o[k] && classNames(o[k]));
-    }), props);
+  _quiet = (handler) => {
+    if (typeof handler !== 'function') {
+      return handler;
+    } else {
+      return function(event) {
+        event.redraw = false;
+        return handler.call(this, event);
+      };
+    }
   };
 
-  /* Invokes Mithril directly to produce a vnode (props are optional) */
-  exports.createElement = createElement = (type, ...children) => {
-    var props;
-    [props, ...children] = isDict(children[0]) ? children : [{}, ...children];
-    return _mithril_(type, calcCssClass(props), ...children);
+  _quietEvents = (attrs, o = {}) => {
+    var k, v;
+    for (k in attrs) {
+      v = attrs[k];
+      (o[k] = k.slice(0, 2) !== 'on' ? v : _quiet(v));
+    }
+    return o;
+  };
+
+  prepareAttrs = (tag, props) => {
+    if (typeof tag !== 'string') {
+      return props;
+    } else {
+      return ['class', 'className', 'classList'].reduce(((o, k) => {
+        o[k] && (o[k] = classNames(o[k]));
+        return o;
+      }), _quietEvents(props));
+    }
+  };
+
+  _createElement = (type, first, rest) => { // performance optimization
+    var _rest, ref, ref1;
+    _rest = ((ref = first[1]) != null ? (ref1 = ref.attrs) != null ? ref1.key : void 0 : void 0) != null ? rest : [rest];
+    return _moveParent(_mithril_(type, prepareAttrs(type, first[0]), first[1], ..._rest));
+  };
+
+  /* Invokes Mithril directly to produce a vnode (props are optional if no children are given) */
+  exports.createElement = (type, props, ...children) => {
+    return _createElement(type, [props || {}], children);
   };
 
   /* Produces the vnode of current (most recent?) component */
   exports.currentComponent = () => {
-    return deref(_vnode);
+    return _vnode;
   };
 
   /* Returns children of the Mithril vnode */
@@ -753,7 +891,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
   /* Produces the Hiccup form of the Reagent component from vnode */
   exports.argv = argv = (vnode) => {
-    return (props(vnode)).argv;
+    return vnode.attrs.argv;
   };
 
   /* Returns RAtom containing state of a Reagent component (from vnode) */
@@ -780,7 +918,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
 },{"./atom":"mreframe/atom","./util":"mreframe/util"}],"mreframe/util":[function(require,module,exports){
 (function() {
-  var _dict, _entries, assoc, assocIn, entries, eq, eqArr, eqObj, flatten, getIn, identity, isArray, isDict, keys, merge, replacer, sorter, type, update, vals;
+  var _dict, _entries, assoc, assocIn, entries, eq, eqArr, eqObj, eqObjShallow, eqShallow, flatten, getIn, identical, identity, isArray, isDict, keys, merge, replacer, sorter, type, update, vals;
 
   exports.identity = identity = (x) => {
     return x;
@@ -895,8 +1033,16 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     return JSON.stringify(x, replacer);
   };
 
+  exports.identical = identical = (a, b) => {
+    return a === b || (a !== a && b !== b);
+  };
+
   exports.eq = eq = (a, b) => {
-    return a === b || (a !== a ? b !== b : isArray(a) ? (isArray(b)) && eqArr(a, b) : (isDict(a)) && (isDict(b)) && eqObj(a, b));
+    return a === b || (a !== a ? b !== b : isArray(a) ? (isArray(b)) && eqArr(a, b, eq) : (isDict(a)) && (isDict(b)) && eqObj(a, b));
+  };
+
+  exports.eqShallow = eqShallow = (a, b) => {
+    return a === b || (a !== a ? b !== b : isArray(a) ? (isArray(b)) && eqArr(a, b, identical) : (isDict(a)) && (isDict(b)) && eqObjShallow(a, b));
   };
 
   sorter = (o) => {
@@ -913,7 +1059,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     }
   };
 
-  eqArr = (xs, ys) => {
+  eqArr = (xs, ys, eq) => {
     return xs.length === ys.length && xs.every((x, i) => {
       return eq(x, ys[i]);
     });
@@ -924,6 +1070,12 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
       return bks.has(k);
     }) && aks.every((k) => {
       return eq(a[k], b[k]);
+    });
+  };
+
+  eqObjShallow = (a, b, aks = keys(a)) => {
+    return aks.length === keys(b).length && aks.every((k) => {
+      return k in b && identical(a[k], b[k]);
     });
   };
 

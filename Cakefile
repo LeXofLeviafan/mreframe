@@ -1,4 +1,4 @@
-[fs, {dirname}, CoffeeScript] = ['fs', 'path', 'coffeescript'].map require
+[fs, {dirname}, {spawnSync}, CoffeeScript] = ['fs', 'path', 'child_process', 'coffeescript'].map require
 
 modules = ['util', 'atom', 'reagent', 're-frame']
 deps = "mithril/mount,mithril/render,mithril/redraw,mithril/hyperscript"
@@ -45,3 +45,11 @@ task 'build:all', "build all bundles (regular and minified)", ->
 
 task 'clean', "clean build/transpilation output", ->
   require('rimraf').sync s for s in ["*.js", "src/*.js", "examples/*.js", "dist/"]
+
+task 'test', "run unit tests", ->
+  spawnSync 'coffee', ["test/all.coffee"], stdio: 'inherit'
+
+task 'perftest', "run performance tests", ->
+  for test in ['mithril', 'mreframe']
+    console.log "\t#{test}"
+    spawnSync 'node', ["performance/test-perf.#{test}.js"], stdio: 'inherit'

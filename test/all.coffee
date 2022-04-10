@@ -1,3 +1,3 @@
-['coffeescript/register', './util', './atom', './reagent', './re-frame'].forEach require
+['coffeescript/register', './util', './atom', './reagent', './re-frame', './redraw-detection'].forEach require
 
 (require 'ospec').run()

@@ -1,6 +1,6 @@
 [o, util] = ['ospec', '../src/util'].map require
 {identity, type, keys, vals, entries, dict, merge, assoc, dissoc, update, getIn,
- assocIn, updateIn, chunks, flatten, repr, eq, chain, multi} = util
+ assocIn, updateIn, chunks, flatten, repr, eq, eqShallow, identical, chain, multi} = util
 
 o.spec "mreframe/util", ->
 
@@ -202,6 +202,21 @@ o.spec "mreframe/util", ->
     o(repr [9, 1, 3]).equals("[9,1,3]")			"works on lists"
     o(repr [/x/]).equals('["/x/"]')			"replaces RegExp with its pattern"
 
+  o "identical()", ->
+    o(identical "foo", "f"+"oo").equals(true)		"returns true for identical values"
+    o(identical "foo", "bar").equals(false)		"returns false for non-identical values"
+    it = [1, 2, 3]
+    o(identical it, it).equals(true)			"lists are identical to themselves"
+    o(identical [1, 2, 3], [1, 2, 3]).equals(false)	"but not to equivalent lists"
+    it = {foo: 1, bar: 2}
+    o(identical it, it).equals(true)			"dicts are identical to themselves"
+    o(identical {foo: 1, bar: 2}, {foo: 1, bar: 2})
+      .equals(false)					"but not to equivalent dicts"
+    o(identical null, null).equals(true)		"works on null"
+    o(identical undefined, undefined).equals(true)	"works on undefined"
+    o(identical null, undefined).equals(false)		"null is not identical to undefined"
+    o(identical NaN, NaN).equals(true)			"works on NaN (all values are identical to themselves)"
+
   o "eq()", ->
     o(eq 1, 1).equals(true)				"tests for equality [1]"
     o(eq 1, 2).equals(false)				"tests for equality [2]"
@@ -234,6 +249,39 @@ o.spec "mreframe/util", ->
     o(eq undefined, undefined).equals(true)		"works on undefined"
     o(eq null, undefined).equals(false)			"null is not equal to undefined"
     o(eq NaN, NaN).equals(true)				"works on NaN (all values are equal to themselves)"
+
+  o "eqShallow()", ->
+    o(eqShallow 1, 1).equals(true)			"tests scalars for equality [1]"
+    o(eqShallow 1, 2).equals(false)			"tests scalars for equality [2]"
+    o(eqShallow [1, 2, 3], [1, 2, 3]).equals(true)	"works on flat lists [1]"
+    o(eqShallow [1, 2, 3], [1, 3, 2]).equals(false)	"works on flat lists [2]"
+    o(eqShallow [1, 2, 3], "1,2,3").equals(false)	"works on flat lists [3]"
+    o(eqShallow {foo: 1, bar: 2}, {bar: 2, foo: 1})
+      .equals(true)					"works on flat dicts [1]"
+    o(eqShallow {foo: 1, bar: 2}, {foo: 2, bar: 1})
+      .equals(false)					"works on flat dicts [2]"
+    o(eqShallow {foo: 1, bar: 2, baz: 3}, {foo: 1, bar: 2})
+      .equals(false)					"works on flat dicts [3]"
+    o(eqShallow {foo: 1, bar: 2}, {foo: 1, bar: 2, baz: 3})
+      .equals(false)					"works on flat dicts [4]"
+    baz = foo: 1, bar: 2
+    abc = [1, 2, 3]
+    o(eqShallow [baz, abc], [baz, abc]).equals(true)	"flat checks work on lists"
+    o(eqShallow {baz, abc}, {baz, abc}).equals(true)	"flat checks work on dicts"
+    o(eqShallow [{foo: 1, bar: 2}], [{foo: 1, bar: 2}])
+      .equals(false)					"nested values are checked for being identical [1]"
+    o(eqShallow {baz: {foo: 1, bar: 2}}, {baz: {foo: 1, bar: 2}})
+      .equals(false)					"nested values are checked for being identical [2]"
+    o(eqShallow [[1, 2, 3]], [[1, 2, 3]])
+      .equals(false)					"nested values are checked for being identical [3]"
+    o(eqShallow {abc: [1, 2, 3]}, {abc: [1, 2, 3]})
+      .equals(false)					"nested values are checked for being identical [4]"
+    o(eqShallow null, null).equals(true)		"works on null"
+    o(eqShallow undefined, undefined).equals(true)	"works on undefined"
+    o(eqShallow null, undefined).equals(false)		"null is not shallow-equal to undefined"
+    o(eqShallow NaN, NaN).equals(true)			"works on NaN (all values are shallow-equal to themselves)"
+    o(eqShallow [NaN], [NaN]).equals(true)		"works on NaN nested in lists"
+    o(eqShallow {NaN: NaN}, {NaN: NaN}).equals(true)	"works on NaN nested in dicts"
 
   o "chain()", ->
     a = foo: 1, bar: 2, baz: 3

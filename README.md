@@ -2,10 +2,47 @@
 [`re-frame`](https://day8.github.io/re-frame) libraries from [ClojureScript](https://clojurescript.org);
 it's a mini-framework for single-page apps (using Mithril as the base renderer, with some interop).
 
-Install: `npm i mreframe` or `<script src="https://unpkg.com/mreframe/dist/mreframe.min.js"></script>`.
+* _Lightweight_, both in size and use: just load a small JavaScript file, `require` it as a library, and you're good to go
+* _No language/stack requirement_ – you can use JS directly, or any language that transpiles into it as long as it has interop
+* _Simple, data-centric API_ using native JS data structures and plain functions for rendering, event handling, and querying state
+* Components, events and queries have _no need to expose their inner workings_ beyond the level of a simple function call
+
+Install: `npm i mreframe`/`yarn add mreframe` or `<script src="https://unpkg.com/mreframe/dist/mreframe.min.js"></script>`.
+
+Here's a full app code example:
+
+```js
+let {reagent: r, reFrame: rf} = require('mreframe');
+
+// registering events
+rf.regEventDb('init',        () => ({counter: 0}));  // initial app state
+rf.regEventDb('counter-add', (db, [_, n]) => ({...db, counter: db.counter + n}));
+
+// registering state queries
+rf.regSub('counter', db => db.counter);
+
+// component functions
+let IncButton = (n, caption) =>
+  ['button', {onclick: () => rf.dispatch(['counter-add', n])},  // invoking counter-add event on button click
+    caption];
+
+let Counter = () =>
+  ['main',
+    ['span.counter', rf.dsub(['counter'])],  // accessing app state
+    " ",
+    [IncButton, +1, "increment"]];
+
+// initializing the app
+rf.dispatchSync(['init']);  // app state needs to be initialized immediately, before first render
+r.render([Counter], document.body);
+```
+
+Tutorial / live demo: [Reagent (components)](https://lexofleviafan.github.io/mreframe/reagent.html),
+[re-frame (events/state management)](https://lexofleviafan.github.io/mreframe/re-frame.html).
 
 * [Intro](#intro)
 * [Usage](#usage)
+* [Q & A](#q--a)
 * [Examples](#examples)
 * [API reference](#api-reference)
 
@@ -23,7 +60,7 @@ I've decided to make it a regular JS library instead (since Wisp would interop w
 
 To minimize dependencies (and thus keep the library lightweight as well, as well as make it easy to use), `mreframe` uses
 [Mithril](https://mithril.js.org) in place of React; it also has no other runtime dependencies. In current version, it has size
-of 8Kb (3.5Kb gzipped) by itself, and when including required Mithril modules it merely goes up to 24Kb (9Kb gzipped).
+of 10Kb (4Kb gzipped) by itself, and with required Mithril submodules included it merely goes up to 26Kb (9.5Kb gzipped).
 
 The library includes two main modules: [`reagent`](docs/reagent.md) (function components modelling DOM with data literals),
 and [`re-frame`](docs/re-frame.md) (state/side-effects management). You can decide to only use one of these as they're mostly
@@ -35,7 +72,8 @@ Both `reagent` and `re-frame` were implemented mostly based on their
 [`reagent.core`](http://reagent-project.github.io/docs/master/reagent.core.html) and
 [`re-frame.core`](https://day8.github.io/re-frame/api-intro) APIs respectively, with minor changes to account for the switch
 from ClojureScript to JS and from React to Mithril. The most major change would be that since Mithril relies on minimizing
-calculations rather than keeping track of dependency changes, state atoms in `mreframe` don't support subscription mechanisms;
+calculations rather than keeping track of dependency changes, state atoms in `mreframe` don't support subscription mechanisms
+(they do however register themselves with the current component and its ancestors to enable re-rendering detection);
 also, I omitted a few things like global interceptors and post-event callbacks from `re-frame` module, and added a couple
 helper functions to make it easier to use in JS. And, of course, in cases where switching to camelCase would make an identifier
 more convenient to use in JS, I did so.
@@ -52,12 +90,12 @@ or, import as a script in webpage from a CDN: `<script src="https://unpkg.com/mr
 
 Access in code by requiring either main module:
 ```js
-const {reFrame: rf, reagent: r, atom: {atom, deref, reset, swap}, util: {getIn, assoc, merge}} = require('mreframe');
+let {reFrame: rf, reagent: r, atom: {deref}, util: {getIn}} = require('mreframe');
 ```
 or separate submodules:
 ```js
-const rf = require('mreframe/re-frame');
-const {getIn} = require('mreframe/util');
+let rf = require('mreframe/re-frame');
+let {getIn} = require('mreframe/util');
 ```
 In case you're using nodeps bundle, or if you want to customize the equality function used by mreframe, run `_init` first:
 ```js
@@ -66,12 +104,51 @@ rf._init({eq: _.eq});
 `_init` is exposed by `reagent` submodule (affects only the submodule itself), and also by `re-frame` and the main module
 (affects both `re-frame` and `reagent` submodules).
 
+[`mreframe/atom`](docs/atom.md) module implements a data storing mechanism called [atoms](https://clojure.org/reference/atoms);
+the main operations provided by it are `deref(atom)` which returns current atom value, `reset(atom, value)` which replaces
+the atom value, and `swap(atom, f, ...args)` which updates atom value (equivalent to `reset(atom, f(deref(atom), ...args))`).
+
+For further information, see [API reference](#api-reference) below and the following tutorials / live demo pages:
+[Reagent (components)](https://lexofleviafan.github.io/mreframe/reagent.html),
+[re-frame (events/state management)](https://lexofleviafan.github.io/mreframe/re-frame.html).
+
+
+# Q & A
+
+* Q: It says I shouldn't mutate the data stored in atoms; how do I update it in that case?  
+  A: Non-mutating updates can be done using functions from [`mreframe/util`](docs/util.md), or a full-scale functional library
+  like [Lodash](https://lodash.com) / [Ramda](https://ramdajs.com) (/ [Rambda](https://selfrefactor.github.io/rambda)).
+* Q: How do I inject raw HTML?  
+  A: If you absolutely have to, use [`m.trust`](https://mithril.js.org/trust.html).
+* Q: What about routing?  
+  A: Use [Mitrhil routing API](https://mithril.js.org/route.html).
+* Q: But neither is available in `dist/mreframe.min.js`!  
+  A: If you're using JS files from CDN, pick `dist/mreframe-nodeps.min.js` instead, and load Mithril as a separate script;
+  then run [`rf._init`](docs/re-frame.md#_init-opts) to connect them.
+* Q: Are there any third-party libraries (components etc.) I can use with this?  
+  A: Yes, pretty much any [Mithril library](https://awesomeopensource.com/project/orbitbot/awesome-mithril) should be compatible.
+* Q: How stable is this API?  
+  A: The Reagent + re-frame combination has existed since 2015 without much change; as I'm reusing it pretty much directly,
+  there's no reason to change much for me either (the only breaking changes so far were in v0.1 update, where I properly
+  implemented subscription detection/redraw cutoff).
+* Q: And how performant is this thing?  
+  A: Mithril boasts high speed in raw rendering; `mreframe/reagent` naturally slows it down to an extent (up to several times),
+  but in v0.1 a redraw cutoff was added, which greatly reduces recalculated area in complex pages with large amount of components.
+  (See render performance comparison for [Mithril](https://lexofleviafan.github.io/mreframe/performance/mithril.html) and
+  [mreframe](https://lexofleviafan.github.io/mreframe/performance/mreframe.html) – though they're mostly testing raw render performance)
+* Q: I have a _huge_ amount of DB events per second in my app, can I disable the deep-equality check in `db` effect handler?  
+  A: Specify `eq` in [`rf._init`](docs/re-frame.md#_init-opts) to replace it with either [`eqShallow`](docs/util.md#eqShallow-a-b)
+  or [`indentical`](docs/util.md#identical-a-b).
+
 
 # Examples
 
 * [Reagent form-2 components + Reagent/Mithril interop](examples/reagent.js.html) (scripted in JavaScript)
+  [[live]](https://lexofleviafan.github.io/mreframe/examples/reagent.js.html)
 * [Re-frame state/side-effects management with Reagent components](examples/re-frame.coffee.html) (scripted in CoffeeScript)
+  [[live]](https://lexofleviafan.github.io/mreframe/examples/re-frame.coffee.html)
 * [Routing using `m.route` (from external Mithril bundle, connected via `_init`)](examples/route.wisp.html) (scripted in Wisp)
+  [[live]](https://lexofleviafan.github.io/mreframe/examples/route.wisp.html)
 * [Rendering HTML from Reagent components using `mithril-node-render`](examples/node-render.coffee) (scripted in CoffeeScript)
 
 
@@ -168,8 +245,8 @@ using `mreframe` with Wisp makes for mostly identical code to that of CLJS
   [`compareAndSet`](docs/atom.md#compareAndSet-atom-oldval-newval)).
 
 `mreframe/util` module API:
-* general-use functions ([`identity`](docs/util.md#identity-x), [`eq`](docs/util.md#eq-a-b), [`chain`](docs/util.md#chain-x-fns),
-  [`repr`](docs/util.md#repr-x));
+* general-use functions ([`identity`](docs/util.md#identity-x), [`eq`](docs/util.md#eq-a-b), [`eqShallow`](docs/util.md#eqShallow-a-b),
+  [`indentical`](docs/util.md#identical-a-b), [`chain`](docs/util.md#chain-x-fns), [`repr`](docs/util.md#repr-x));
 * type check functions ([`type`](docs/util.md#type-x), [`isArray`](docs/util.md#isArray-x), [`isDict`](docs/util.md#isDict-x),
   [`isFn`](docs/util.md#isFn-x));
 * functions for arrays ([`chunks`](docs/util.md#chunks-xs-n), [`flatten`](docs/util.md#flatten-xs));
@@ -177,6 +254,6 @@ using `mreframe` with Wisp makes for mostly identical code to that of CLJS
   [`vals`](docs/util.md#vals-o));
 * functions manipulating collections ([`merge`](docs/util.md#merge-os), [`assoc`](docs/util.md#assoc-o-k-v),
   [`dissoc`](docs/util.md#dissoc-o-ks), [`update`](docs/util.md#update-o-k-f-args), [`getIn`](docs/util.md#getIn-o-path),
-  [`assocIn`](docs/util.md#assocIn-o-path-v), [`updateIn`](docs/util.md#updateIn-o-path-v));
+  [`assocIn`](docs/util.md#assocIn-o-path-v), [`updateIn`](docs/util.md#updateIn-o-path-f-args));
 * a simple [multimethods](https://clojure.org/reference/multimethods) implementation
   ([`multi`](docs/util.md#multi-dispatchIdentity)).

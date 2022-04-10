@@ -169,11 +169,27 @@ used as a workaround for `Map` only supporting identity comparison.
 repr( [{foo: 1, bar: 2, baz: /3/}] )  // ⇒ `[{"bar": 2, "baz": "/3/", "foo": 1}]`
 ```
 
+### [`identical (a, b)`](https://clojuredocs.org/clojure.core/identical_q)
+Is a by-pointer identity comparison; it's the comparison function used by `reagent` and `re-frame` modules for most ratom update checks.
+The difference from `===` is that it also checks for `NaN` (so that any value is identical to itself).
+```js
+identical("foo", "foo")  // ⇒ true
+identical(NaN, NaN)      // ⇒ true
+```
+
 ### [`eq (a, b)`](https://clojuredocs.org/clojure.core/%3D)
 Is a by-value deep-comparison of plain data structures (supporting arrays and dictionaries);
-it's the comparison function used by `reagent` and `re-frame` modules by default (can be overridden by calling `_init({eq: …})`).
+it's the comparison function used by `re-frame` module for db update checks (can be overridden by calling `_init({eq: …})`).
 ```js
 eq([{foo: 1, bar: NaN}], [{bar: NaN, foo: 1}])  // ⇒ true
+```
+
+### eqShallow (a, b)
+Is a by-value shallow-comparison of plain data structures (supporting arrays and dictionaries);
+it's used for comparing flat data structures.
+```js
+eqShallow({foo: 1, bar: NaN}, {bar: NaN, foo: 1})    // ⇒ true
+eqShallow(['foo', 'bar', NaN], ['foo', 'bar', NaN])  // ⇒ true
 ```
 
 ### [`chain (x, ...fns)`](https://clojuredocs.org/clojure.core/-%3E)

@@ -30,16 +30,15 @@ Is a setup function (only necessary if you're using `nodeps` bundle); `opts` may
 * `redraw`: redraw hook function (defaults to `m.redraw`);
 * `mount`: vnode mount function (defaults to `m.mount`);
 * `hyperscript`: vnode generation function (defaults to `m`; `.fragment` is used for rendering fragments if present);
-* `eq`: deep equality comparison (for RAtom/RCursor update checks; defaults to [`util.eq`](util.md#eq-a-b)).
 
-Only included options are updated, so to replace `eq` with Lodash version you can simply call `r._init({eq: _.isEqual})`.
+Only included options are updated, so if you need to disable redraw for some reason you can simply call `r._init({redraw: identity})`.
 
 ### `resetCache ()`
 Clears function-components cache (shouldn't really be necessary).
 
 ### [`atom (x)`](http://reagent-project.github.io/docs/master/reagent.core.html#var-atom)
 Creates an [atom](atom.md); it calls the `redraw` hook on every successful data update
-(but doesn't update when new value equals the old one).
+(but doesn't update when setting the same value).
 ```js
 var x = r.atom(42)      // ⇒ RAtom(42)
 reset(x, {answer: 42})  // ⇒ {answer: 42} /* m.redraw() is called on update */
@@ -47,7 +46,7 @@ reset(x, {answer: 42})  // ⇒ {answer: 42} /* m.redraw() is not called as the v
 ```
 
 ### [`cursor (src, path)`](http://reagent-project.github.io/docs/master/reagent.core.html#var-cursor)
-creates a derived [atom](atom.md); it also skips updates when new value equals the old one
+creates a derived [atom](atom.md); it also skips updates when new value is the same as the old one
 * if `src` is a function, `deref(rcursor)` returns `src(path)`, and `reset(rcursor, value)` calls `src(path, value)`;
 * otherwise, `deref()` returns `getIn(deref(src), path)`, and `reset()` calls `swap(src, assocIn, path, value)`.
 ```js
@@ -70,13 +69,16 @@ r.classNames("foo bar", [1 && 'x', 0 && 'y', 'z'],
              {answer: 42, foo: null, error: false}) // ⇒ "bar x z answer"
 ```
 
-### [`createElement (type, [props], ...children)`](http://reagent-project.github.io/docs/master/reagent.core.html#var-create-element)
-Invokes Mithril directly to produce a vnode (`props` are optional); when `props` are provided (they must be `isDict()`),
-each of Mithril CSS class (`class`, `className` & `classList`) attributes is replaced using `classNames()` (unless it's nil).
+### [`createElement (type, props?, ...children)`](http://reagent-project.github.io/docs/master/reagent.core.html#var-create-element)
+Invokes Mithril directly to produce a vnode (`props` are optional when there's no children); when `props` are provided,
+each of Mithril CSS class (`class`, `className` & `classList`) attributes is replaced using `classNames()` (unless it's nil).  
+Note: for performance, children are passed to Mithril as an array (fragment with no metadata).
 ```js
 r.createElement('div', {class: ['foo', x && 'bar', 'baz']}, "Hello World")
 // ~ m('div', {class: r.classNames(['foo', x && 'bar', 'baz'])}, "Hello World")
 ```
+Note regarding `classList`: in Mithril, it works same way as `class` or `className` (accepts a string and not a list),
+except that including classes in tag selector (e.g. `div.foo`) _overrides_ it instead of it being appended to generated CSS classes.
 
 ### [`adaptComponent (c)`](http://reagent-project.github.io/docs/master/reagent.core.html#var-adapt-react-class)
 Converts a Mithril component into a Reagent component.
@@ -115,6 +117,8 @@ Creates a Reagent component based on provided hook methods (mostly based on Cloj
 - `render` renders a Mithril component (see [`view`](https://mithril.js.org/components.html) method)
 - `renderReagent` is the same as `render` but renders Hiccup instead (same as function components)
 
+**Note:** `shouldComponentUpdate` overrites Reagent changes detection
+
 For all of these, vnode is bound to `this` as well as passed as the first argument (like in Mithril),
 and `constructor` additionally accepts props as the 2nd argument. The only exception is `renderReagent`
 which only expects function arguments (same as function components).
@@ -139,7 +143,8 @@ r.render([App], document.body)
 ```
 
 ### [`currentComponent ()`](http://reagent-project.github.io/docs/master/reagent.core.html#var-current-component)
-Returns the vnode of current component (in a function component or a method of a Reagent component).
+Returns the vnode of current component (in a function component or a method of a Reagent component).  
+Note that if you use an unbound `function` in either case, the vnode will be accessible as `this`.
 ```js
 var rComponent = () => [...r.currentComponent().children] // ~ {view: ({children}) => [...children]}
 ```

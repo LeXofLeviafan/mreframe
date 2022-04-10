@@ -24,10 +24,15 @@ exports.chunks = (xs, n) => Array.from length: (Math.ceil xs.length / n),
                                        (_, i) => xs[n*i ... n*(i+1)]	# /
 exports.flatten = flatten = (xs) => unless isArray xs then xs else xs.flatMap flatten
 exports.repr = (x) => JSON.stringify x, replacer
+exports.identical = identical = (a, b) => a is b or (a isnt a and b isnt b)
 exports.eq = eq = (a, b) => a is b or
   if a isnt a       then b isnt b
-  else if isArray a then (isArray b) and eqArr a, b
+  else if isArray a then (isArray b) and eqArr a, b, eq
   else (isDict a) and (isDict b) and eqObj a, b
+exports.eqShallow = eqShallow = (a, b) => a is b or
+  if a isnt a       then b isnt b
+  else if isArray a then (isArray b) and eqArr a, b, identical
+  else (isDict a) and (isDict b) and eqObjShallow a, b
 
 sorter = (o) => _dict (entries o).sort()
 
@@ -36,9 +41,11 @@ replacer = (_, v) =>
   else unless isDict v then v
   else sorter v
 
-eqArr = (xs, ys) => xs.length is ys.length and xs.every (x, i) => eq x, ys[i]
+eqArr = (xs, ys, eq) => xs.length is ys.length and xs.every (x, i) => eq x, ys[i]
 eqObj = (a, b, aks = (keys a), bks = new Set(keys b)) =>
   aks.length is bks.size and aks.every((k) => bks.has(k)) and aks.every (k) => eq a[k], b[k]
+eqObjShallow = (a, b, aks = (keys a)) =>
+  aks.length is keys(b).length and aks.every (k) => k of b and identical a[k], b[k]
 
 exports.chain = (x, ...fs) => fs.map((f) => if isArray f then f else [f]).reduce ((x, f) => f[0] x, ...f[1..]), x
 

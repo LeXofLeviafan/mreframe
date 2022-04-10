@@ -18,16 +18,19 @@ The general usage is as follows:
 Aside from implementing most of re-frame API, this module exports 2 helper functions: `dsub` (`deref`+`subscribe`), and `disp`
 (`dispatch` wrapper to be used in effects, includes event existence check & allows for supplying additional parameters).
 
-Includes 3 built-in effects (see [`rf.regEventFx`](#regEventFx-id-interceptors-handler)):
-[`db`](#db-builtin-effect), [`fx`](#fx-builtin-effect), and [`dispatchLater`](#dispatchLater-builtin-effect).
+Includes 4 built-in effects (see [`rf.regEventFx`](#regEventFx-id-interceptors-handler)): [`db`](#db-builtin-effect),
+[`fx`](#fx-builtin-effect), [`dispatch`](#dispatch-builtin-effect), and [`dispatchLater`](#dispatchLater-builtin-effect).
 
 ### `_init (opts)`
 A setup function (only necessary if you're using `nodeps` bundle); `opts` may include:
-* `eq`: deep equality comparison (for subscription update checks; defaults to [`util.eq`](util.md#eq-a-b));
+* `eq`: deep equality comparison (for db update checks; defaults to [`util.eq`](util.md#eq-a-b));
 * additional `opts` for [`r._init()`](reagent.md#_init-opts).
 
 This is the `_init` exported in the main `mreframe` module. It also invokes [`r._init()`](reagent.md#_init-opts),
 which is where most `opts` are actually used.
+
+To replace db update checks with shallow-equality, run `rf._init({eq: eqShallow})`, and to use identity checks instead,
+run `rf._init({eq: identical})` (see [`util`](util.md)).
 
 ### [`dispatch (event)`](https://day8.github.io/re-frame/api-re-frame.core/#dispatch)
 Asynchronously dispatches an event (described as `['id', ...args]`).

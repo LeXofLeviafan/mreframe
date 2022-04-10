@@ -33,10 +33,17 @@ butlast = (xs) -> xs[..-2] # sic!
 
 o.spec "mreframe/re-frame", ->
 
-  _reset = -> rf._init {redraw: identity}
+  {error, warn} = console
+  _reset = (loggers = {error, warn}) -> rf._init {redraw: identity};   Object.assign console, loggers
 
-  o.before _reset
-  o.afterEach _reset
+  o.before    -> _reset error: o.spy(), warn: o.spy()
+  o.afterEach ->
+    _reset error: o.spy(), warn: o.spy()
+    rf.clearEvent()
+    rf.clearCofx()
+    rf.clearSub()
+    rf.clearFx()
+  o.after     -> _reset {error, warn}
 
   o "getCoeffect()", ->
     context = mkContext()
@@ -255,6 +262,10 @@ o.spec "mreframe/re-frame", ->
     now = new Date
     cofx = (cofx, key='time') -> assoc cofx, key, now
     o(rf.regCofx 'now', cofx).equals(undefined)		"regCofx returns undefined"
+    o(rf.regCofx 'now', cofx).equals(undefined)		"allows overwriting existing coeffects"
+    o(console.warn.callCount).equals(1)			"a warning message is printed"
+    msg = "re-frame: overwriting coeffect handler for: 'now'"
+    o(console.warn.args).deepEquals([msg])		"the warning message describes the issue"
     context = mkContext()
     for [k, x] in [['time', rf.injectCofx 'now'], ['date', (rf.injectCofx 'now', 'date')]]
       do (k, x) ->
@@ -272,14 +283,20 @@ o.spec "mreframe/re-frame", ->
       do (k) -> rf.regCofx k, (cofx) -> assoc cofx, k, now
     x = rf.injectCofx 'time'
     y = rf.injectCofx 'date'
-    o(rf.clearCofx 'time').equals(undefined)		"returns undefined"
-    o(-> x.before mkContext()).throws(TypeError)	"the coeffect cannot be used anymore"
+    o(rf.clearCofx 'time').equals(undefined)		"returns undefined [1]"
+    o(x.before mkContext()).deepEquals( mkContext() )	"the coeffect doesn't affect the context anymore"
+    o(console.error.callCount).equals(1)		"an error message is printed [1]"
+    msg = "re-frame: no coeffect handler registered for: 'time'"
+    o(console.error.args).deepEquals([msg])		"the error message describes the issue [1]"
     isInterceptor(rf.injectCofx 'time')			"though existence of coeffects isn't checked upon injection"
     o(rf.clearCofx 'time').equals(undefined)		"returns undefined on nonexistent"
     o(rf.getCoeffect (y.before mkContext()), 'date')
       .equals(now)					"other coeffects aren't affected"
-    o( rf.clearCofx() ).equals(undefined)		"returns undefined"
-    o(-> y.before mkContext()).throws(TypeError)	"all coeffects were unregistered"
+    o( rf.clearCofx() ).equals(undefined)		"returns undefined [2]"
+    o(y.before mkContext()).deepEquals( mkContext() )	"all coeffects were unregistered"
+    o(console.error.callCount).equals(2)		"an error message is printed [2]"
+    msg = "re-frame: no coeffect handler registered for: 'date'"
+    o(console.error.args).deepEquals([msg])		"the error message describes the issue [2]"
 
   o "dispatchSync() + db builtin effect", ->
     {$assocIn, $resetDb} = $dbUpdates()
@@ -334,6 +351,10 @@ o.spec "mreframe/re-frame", ->
         {$resetDb} = $dbUpdates()
         $resetDb()
         o(rf[reg] id1, fn1).equals(undefined)		"returns undefined"
+        o(rf[reg] id1, fn1).equals(undefined)		"allows overwriting existing events"
+        o(console.warn.callCount).equals(1)		"a warning message is printed"
+        msg = "re-frame: overwriting event handler for: '#{id1}'"
+        o(console.warn.args).deepEquals([msg])		"the warning message describes the issue"
         rf.dispatchSync [id1, 'foo', bar: 'baz']
         rf.dispatchSync [id1, 'answer', 42]
         db = answer: 42, foo: {bar: 'baz'}
@@ -370,19 +391,30 @@ o.spec "mreframe/re-frame", ->
 
   o "clearEvent()", ->
     {$resetDb, $assocIn} = $dbUpdates()
-    o(rf.clearEvent 'assoc-in').equals(undefined)	"returns undefined"
+    o(rf.clearEvent 'assoc-in').equals(undefined)	"returns undefined [1]"
     o(-> $assocIn ['foo', 'bar'], 'baz')
-      .throws(TypeError)				"removes passed event"
+      .notThrows(Error)					"evoking removed event does not raise an error"
+    o(console.error.callCount).equals(1)		"an error message is printed"
+    msg = "re-frame: no event handler registered for: 'assoc-in'"
+    o(console.error.args).deepEquals([msg])		"the error message describes the issue"
     o(rf.clearEvent 'assoc-in').equals(undefined)	"returns undefined on nonexistent"
     $resetDb()
-    o(rf.clearEvent()).equals(undefined)		"returns undefined"
-    o($resetDb).throws(TypeError)			"removes all events"
+    o(console.error.callCount).equals(1)		"no error message before event removal"
+    o(rf.clearEvent()).equals(undefined)		"returns undefined [2]"
+    $resetDb()
+    o(console.error.callCount).equals(2)		"an error message is printed [2]"
+    msg = "re-frame: no event handler registered for: 'reset-db'"
+    o(console.error.args).deepEquals([msg])		"the error message describes the issue [2]"
 
   o "regSub() + subscribe()", ->
     {$resetDb, $assocIn} = $dbUpdates()
     $resetDb();  $assocIn ['foo', 'bar'], 'baz'
     foo = o.spy getIn
     o(rf.regSub 'foo', foo).equals(undefined)		"regSub returns undefined"
+    o(rf.regSub 'foo', foo).equals(undefined)		"allows overwriting existing subscriptions"
+    o(console.warn.callCount).equals(1)			"a warning message is printed"
+    msg = "re-frame: overwriting subscription handler for: 'foo'"
+    o(console.warn.args).deepEquals([msg])		"the warning message describes the issue"
     query = ['foo']
     fooSub = rf.subscribe query
     query2 = ['foo', 'bar']
@@ -474,14 +506,20 @@ o.spec "mreframe/re-frame", ->
     rf.regSub 'oob', (db) -> db.foo
     x = rf.subscribe ['boo']
     y = rf.subscribe ['oob']
-    o(deref x).equals($db().foo)
-    o(rf.clearSub 'boo').equals(undefined)		"returns undefined"
+    o(deref x).equals($db().foo)			"calculation created successfully"
+    o(rf.clearSub 'boo').equals(undefined)		"returns undefined [1]"
     o(deref x).equals($db().foo)			"calculation still exists"
-    o(-> deref rf.subscribe ['boo']).throws(TypeError)	"but subsription cannot access it anymore"
+    o(rf.subscribe ['boo']).equals(undefined)		"but subsription cannot access it anymore"
+    o(console.error.callCount).equals(1)		"an error message is printed"
+    msg = "re-frame: no subscription handler registered for: 'boo'"
+    o(console.error.args).deepEquals([msg])		"the error message describes the issue"
     o(rf.clearSub 'boo').equals(undefined)		"returns undefined on nonexistent"
-    o( rf.clearSub() ).equals(undefined)		"returns undefined"
+    o( rf.clearSub() ).equals(undefined)		"returns undefined [2]"
     o(deref y).equals($db().foo)			"uncached calculation also still exists"
-    o(-> deref rf.subscribe ['oob']).throws(TypeError)	"but all subscriptions were removed now"
+    o(rf.subscribe ['oob']).equals(undefined)		"but all subscriptions were removed now"
+    o(console.error.callCount).equals(2)		"an error message is printed [2]"
+    msg = "re-frame: no subscription handler registered for: 'oob'"
+    o(console.error.args).deepEquals([msg])		"the error message describes the issue [2]"
 
   o "clearSubscriptionCache()", ->
     {$resetDb, $assocIn} = $dbUpdates()
@@ -509,6 +547,10 @@ o.spec "mreframe/re-frame", ->
   o "regFx()", ->
     log = o.spy()
     o(rf.regFx 'log', log).equals(undefined)		"returns undefined"
+    o(rf.regFx 'log', log).equals(undefined)		"allows overwriting existing effects"
+    o(console.warn.callCount).equals(1)			"a warning message is printed"
+    msg = "re-frame: overwriting effect handler for: 'log'"
+    o(console.warn.args).deepEquals([msg])		"the warning message describes the issue"
     rf.regEventFx 'log', [rf.unwrap], (_, msg) -> log: msg
     rf.dispatchSync ['log', "Foo"]
     o(log.callCount).equals(1)				"registered effect actioned once on db count"
@@ -525,14 +567,18 @@ o.spec "mreframe/re-frame", ->
     rf.regFx 'doOtherStuff', identity
     rf.regEventFx 'do-stuff', -> doStuff: yes
     rf.regEventFx 'do-other-stuff', -> doOtherStuff: yes
-    o(rf.clearFx 'doStuff').equals(undefined)		"returns undefined"
-    o(-> rf.dispatchSync ['do-stuff'])
-      .throws(TypeError)				"effect was removed"
+    o(rf.clearFx 'doStuff').equals(undefined)		"returns undefined [2]"
+    o(-> rf.dispatchSync ['do-stuff']).notThrows(Error)	"evoking removed effect does not raise an error"
+    o(console.error.callCount).equals(1)		"an error message is printed [1]"
+    msg = "re-frame: no effect handler registered for: 'doStuff'"
+    o(console.error.args).deepEquals([msg])		"the error message describes the issue [1]"
     o(rf.clearFx 'doStuff').equals(undefined)		"returns undefined on nonexistent"
-    o( rf.clearFx() ).equals(undefined)			"returns undefined"
-    o(-> rf.dispatchSync ['do-other-stuff'])
-      .throws(TypeError)				"all effects were removed"
-    o($resetDb).notThrows(Error)			"except for builtin ones"
+    o( rf.clearFx() ).equals(undefined)			"returns undefined [2]"
+    rf.dispatchSync ['do-other-stuff']
+    o(console.error.callCount).equals(2)		"an error message is printed [2]"
+    msg = "re-frame: no effect handler registered for: 'doOtherStuff'"
+    o(console.error.args).deepEquals([msg])		"the error message describes the issue [2]"
+    o($resetDb).notThrows(Error)			"builtin effects are not affected"
 
   o "fx builtin effect", ->
     order = []
