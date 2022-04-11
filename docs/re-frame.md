@@ -18,8 +18,8 @@ The general usage is as follows:
 Aside from implementing most of re-frame API, this module exports 2 helper functions: `dsub` (`deref`+`subscribe`), and `disp`
 (`dispatch` wrapper to be used in effects, includes event existence check & allows for supplying additional parameters).
 
-Includes 4 built-in effects (see [`rf.regEventFx`](#regEventFx-id-interceptors-handler)): [`db`](#db-builtin-effect),
-[`fx`](#fx-builtin-effect), [`dispatch`](#dispatch-builtin-effect), and [`dispatchLater`](#dispatchLater-builtin-effect).
+Includes 4 built-in effects (see [`rf.regEventFx`](#regeventfx-id-interceptors-handler)): [`db`](#db-builtin-effect),
+[`fx`](#fx-builtin-effect), [`dispatch`](#dispatch-builtin-effect), and [`dispatchLater`](#dispatchlater-builtin-effect).
 
 ### `_init (opts)`
 A setup function (only necessary if you're using `nodeps` bundle); `opts` may include:

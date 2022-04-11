@@ -137,18 +137,15 @@ For further information, see [API reference](#api-reference) below and the follo
   (See render performance comparison for [Mithril](https://lexofleviafan.github.io/mreframe/performance/mithril.html) and
   [mreframe](https://lexofleviafan.github.io/mreframe/performance/mreframe.html) – though they're mostly testing raw render performance)
 * Q: I have a _huge_ amount of DB events per second in my app, can I disable the deep-equality check in `db` effect handler?  
-  A: Specify `eq` in [`rf._init`](docs/re-frame.md#_init-opts) to replace it with either [`eqShallow`](docs/util.md#eqShallow-a-b)
+  A: Specify `eq` in [`rf._init`](docs/re-frame.md#_init-opts) to replace it with either [`eqShallow`](docs/util.md#eqshallow-a-b)
   or [`indentical`](docs/util.md#identical-a-b).
 
 
 # Examples
 
 * [Reagent form-2 components + Reagent/Mithril interop](examples/reagent.js.html) (scripted in JavaScript)
-  [[live]](https://lexofleviafan.github.io/mreframe/examples/reagent.js.html)
 * [Re-frame state/side-effects management with Reagent components](examples/re-frame.coffee.html) (scripted in CoffeeScript)
-  [[live]](https://lexofleviafan.github.io/mreframe/examples/re-frame.coffee.html)
 * [Routing using `m.route` (from external Mithril bundle, connected via `_init`)](examples/route.wisp.html) (scripted in Wisp)
-  [[live]](https://lexofleviafan.github.io/mreframe/examples/route.wisp.html)
 * [Rendering HTML from Reagent components using `mithril-node-render`](examples/node-render.coffee) (scripted in CoffeeScript)
 
 
@@ -183,77 +180,77 @@ using `mreframe` with Wisp makes for mostly identical code to that of CLJS
 `mreframe/re-frame` module API:
 * setup: [`rf._init`](docs/re-frame.md#_init-opts) (normally not needed);
 * events (decision-making logic defined as pure functions):
-  - registering functions ([`rf.regEventDb`](docs/re-frame.md#regEventDb-id-interceptors-handler),
-    [`rf.regEventFx`](docs/re-frame.md#regEventFx-id-interceptors-handler),
-    [`rf.regEventCtx`](docs/re-frame.md#regEventCtx-id-interceptors-handler)),
+  - registering functions ([`rf.regEventDb`](docs/re-frame.md#regeventdb-id-interceptors-handler),
+    [`rf.regEventFx`](docs/re-frame.md#regeventfx-id-interceptors-handler),
+    [`rf.regEventCtx`](docs/re-frame.md#regeventctx-id-interceptors-handler)),
   - dispatching functions ([`rf.dispatch`](docs/re-frame.md#dispatch-event),
-    [`rf.dispatchSync`](docs/re-frame.md#dispatchSync-event)),
-  - unregistering function for development ([`rf.clearEvent`](docs/re-frame.md#clearEvent-id)),
-  - helper function [`rf.purgeEventQueue`](docs/re-frame.md#purgeEventQueue-) (for cancelling scheduled events);
+    [`rf.dispatchSync`](docs/re-frame.md#dispatchsync-event)),
+  - unregistering function for development ([`rf.clearEvent`](docs/re-frame.md#clearevent-id)),
+  - helper function [`rf.purgeEventQueue`](docs/re-frame.md#purgeeventqueue-) (for cancelling scheduled events);
 * subscriptions (computations for views, with caching):
-  - registering function ([`rf.regSub`](docs/re-frame.md#regSub-id-computation)),
+  - registering function ([`rf.regSub`](docs/re-frame.md#regsub-id-computation)),
   - querying functions ([`rf.subscribe`](docs/re-frame.md#subscribe-query), [`rf.dsub`](docs/re-frame.md#dsub-query)),
-  - unregistering function for development ([`rf.clearSub`](docs/re-frame.md#clearSub-id)),
-  - cache clearing function for development ([`rf.clearSubscriptionCache`](docs/re-frame.md#clearSubscriptionCache-));
+  - unregistering function for development ([`rf.clearSub`](docs/re-frame.md#clearsub-id)),
+  - cache clearing function for development ([`rf.clearSubscriptionCache`](docs/re-frame.md#clearsubscriptioncache-));
 * effects (implementation of side-effects for use in events):
-  - registering function ([`rf.regFx`](docs/re-frame.md#regFx-id-handler)),
-  - unregistering function for development ([`rf.clearFx`](docs/re-frame.md#clearFx-id)),
+  - registering function ([`rf.regFx`](docs/re-frame.md#regfx-id-handler)),
+  - unregistering function for development ([`rf.clearFx`](docs/re-frame.md#clearfx-id)),
   - helper function [`rf.disp`](docs/re-frame.md#disp-event-args) (for dispatching `onSuccess`/`onFailure` events),
   - builtin effects ([`db`](docs/re-frame.md#db-builtin-effect), [`fx`](docs/re-frame.md#fx-builtin-effect),
-    [`dispatchLater`](docs/re-frame.md#dispatchLater-builtin-effect), [`dispatch`](docs/re-frame.md#dispatch-builtin-effect));
+    [`dispatchLater`](docs/re-frame.md#dispatchlater-builtin-effect), [`dispatch`](docs/re-frame.md#dispatch-builtin-effect));
 * interceptors (‘wrappers’ that alter event processing when used in event registering function):
-  - creator function ([`rf.toInterceptor`](docs/re-frame.md#toInterceptor-id-before-after)),
-  - predefined interceptors ([`rf.unwrap`](docs/re-frame.md#unwrap), [`rf.trimV`](docs/re-frame.md#trimV)) and generators
+  - creator function ([`rf.toInterceptor`](docs/re-frame.md#tointerceptor-id-before-after)),
+  - predefined interceptors ([`rf.unwrap`](docs/re-frame.md#unwrap), [`rf.trimV`](docs/re-frame.md#trimv)) and generators
     ([`rf.path`](docs/re-frame.md#path-path), [`rf.enrich`](docs/re-frame.md#enrich-f), [`rf.after`](docs/re-frame.md#after-f),
-    [`rf.onChanges`](docs/re-frame.md#onChanges-f-outPath-inPaths)),
-  - helper functions ([`rf.getCoeffect`](docs/re-frame.md#getCoeffect-context-key-notFound),
-    [`rf.assocCoeffect`](docs/re-frame.md#assocCoeffect-context-key-value),
-    [`rf.getEffect`](docs/re-frame.md#getEffect-context-key-notFound),
-    [`rf.assocEffect`](docs/re-frame.md#assocEffect-context-key-value),
+    [`rf.onChanges`](docs/re-frame.md#onchanges-f-outpath-inpaths)),
+  - helper functions ([`rf.getCoeffect`](docs/re-frame.md#getcoeffect-context-key-notfound),
+    [`rf.assocCoeffect`](docs/re-frame.md#assoccoeffect-context-key-value),
+    [`rf.getEffect`](docs/re-frame.md#geteffect-context-key-notfound),
+    [`rf.assocEffect`](docs/re-frame.md#assoceffect-context-key-value),
     [`rf.enqueue`](docs/re-frame.md#enqueue-context-interceptors));
 * coeffects (‘external’ input getters for events, used as interceptors):
-  - registering function ([`rf.regCofx`](docs/re-frame.md#regCofx-id-handler)),
-  - interceptor creator function ([`rf.injectCofx`](docs/re-frame.md#injectCofx-id-arg)),
-  - unregistering function for development ([`rf.clearCofx`](docs/re-frame.md#clearCofx-id)).
+  - registering function ([`rf.regCofx`](docs/re-frame.md#regcofx-id-handler)),
+  - interceptor creator function ([`rf.injectCofx`](docs/re-frame.md#injectcofx-id-arg)),
+  - unregistering function for development ([`rf.clearCofx`](docs/re-frame.md#clearcofx-id)).
 
 `mreframe/reagent` module API:
 * setup: [`r._init`](docs/reagent.md#_init-opts) (normally not needed);
 * atoms: [`r.atom`](docs/reagent.md#atom-x) (triggers redraw on update), [`r.cursor`](docs/reagent.md#cursor-src-path)
   (‘wrapper’ atom);
 * component creation functions:
-  - [`r.adaptComponent`](docs/reagent.md#adaptComponent-c) for using Mithril components,
-  - [`r.createClass`](docs/reagent.md#createClass-spec) for creating Reagent components with hooks;
+  - [`r.adaptComponent`](docs/reagent.md#adaptcomponent-c) for using Mithril components,
+  - [`r.createClass`](docs/reagent.md#createclass-spec) for creating Reagent components with hooks;
 * component rendering functions:
-  - [`r.createElement`](docs/reagent.md#createElement-type-props-children) for directly invoking Mithril hyperscript,
-  - [`r.asElement`](docs/reagent.md#asElement-form) for rendering Hiccup,
+  - [`r.createElement`](docs/reagent.md#createelement-type-props-children) for directly invoking Mithril hyperscript,
+  - [`r.asElement`](docs/reagent.md#aselement-form) for rendering Hiccup,
   - [`r.with`](docs/reagent.md#with-meta-form) for supplying metadata (props) to Reagent components,
   - [`r.render`](docs/reagent.md#render-form-container) for mounting Reagent/Hiccup view on DOM,
-  - [`r.resetCache`](docs/reagent.md#resetCache-) for clearing function components cache (for development);
+  - [`r.resetCache`](docs/reagent.md#resetcache-) for clearing function components cache (for development);
 * component helper functions:
-  - [`r.classNames`](docs/reagent.md#classNames-classes) for generating/combining CSS classes lists,
-  - [`r.curentComponent`](docs/reagent.md#currentComponent-) for accessing Mithril component from Reagent views,
+  - [`r.classNames`](docs/reagent.md#classnames-classes) for generating/combining CSS classes lists,
+  - [`r.curentComponent`](docs/reagent.md#currentcomponent-) for accessing Mithril component from Reagent views,
   - component data accessors ([`r.children`](docs/reagent.md#children-vnode), [`r.props`](docs/reagent.md#props-vnode),
-    [`r.argv`](docs/reagent.md#argv-vnode), [`r.stateAtom`](docs/reagent.md#stateAtom-vnode)),
+    [`r.argv`](docs/reagent.md#argv-vnode), [`r.stateAtom`](docs/reagent.md#stateatom-vnode)),
   - Reagent component state reader function ([`r.state`](docs/reagent.md#state-vnode) and updater functions
-    ([`r.setState`](docs/reagent.md#setState-vnode-newState), [`r.replaceState`](docs/reagent.md#replaceState-vnode-newState)).
+    ([`r.setState`](docs/reagent.md#setstate-vnode-newstate), [`r.replaceState`](docs/reagent.md#replacestate-vnode-newstate)).
 
 `mreframe/atom` module API:
 * regular atom creator function ([`atom`](docs/atom.md#atom-x));
 * atom state reader ([`deref`](docs/atom.md#deref-atom));
-* atom state updaters ([`reset`](docs/atom.md#reset-atom-value), [`resetVals`](docs/atom.md#resetVals-atom-value),
-  [`swap`](docs/atom.md#swap-atom-f-args), [`swapVals`](docs/atom.md#swapVals-atom-f-args),
-  [`compareAndSet`](docs/atom.md#compareAndSet-atom-oldval-newval)).
+* atom state updaters ([`reset`](docs/atom.md#reset-atom-value), [`resetVals`](docs/atom.md#resetvals-atom-value),
+  [`swap`](docs/atom.md#swap-atom-f-args), [`swapVals`](docs/atom.md#swapvals-atom-f-args),
+  [`compareAndSet`](docs/atom.md#compareandset-atom-oldval-newval)).
 
 `mreframe/util` module API:
-* general-use functions ([`identity`](docs/util.md#identity-x), [`eq`](docs/util.md#eq-a-b), [`eqShallow`](docs/util.md#eqShallow-a-b),
+* general-use functions ([`identity`](docs/util.md#identity-x), [`eq`](docs/util.md#eq-a-b), [`eqShallow`](docs/util.md#eqshallow-a-b),
   [`indentical`](docs/util.md#identical-a-b), [`chain`](docs/util.md#chain-x-fns), [`repr`](docs/util.md#repr-x));
-* type check functions ([`type`](docs/util.md#type-x), [`isArray`](docs/util.md#isArray-x), [`isDict`](docs/util.md#isDict-x),
-  [`isFn`](docs/util.md#isFn-x));
+* type check functions ([`type`](docs/util.md#type-x), [`isArray`](docs/util.md#isarray-x), [`isDict`](docs/util.md#isdict-x),
+  [`isFn`](docs/util.md#isfn-x));
 * functions for arrays ([`chunks`](docs/util.md#chunks-xs-n), [`flatten`](docs/util.md#flatten-xs));
 * functions for dicts ([`dict`](docs/util.md#dict-kvs), [`entries`](docs/util.md#entries-o), [`keys`](docs/util.md#keys-o),
   [`vals`](docs/util.md#vals-o));
 * functions manipulating collections ([`merge`](docs/util.md#merge-os), [`assoc`](docs/util.md#assoc-o-k-v),
-  [`dissoc`](docs/util.md#dissoc-o-ks), [`update`](docs/util.md#update-o-k-f-args), [`getIn`](docs/util.md#getIn-o-path),
-  [`assocIn`](docs/util.md#assocIn-o-path-v), [`updateIn`](docs/util.md#updateIn-o-path-f-args));
+  [`dissoc`](docs/util.md#dissoc-o-ks), [`update`](docs/util.md#update-o-k-f-args), [`getIn`](docs/util.md#getin-o-path),
+  [`assocIn`](docs/util.md#associn-o-path-v), [`updateIn`](docs/util.md#updatein-o-path-f-args));
 * a simple [multimethods](https://clojure.org/reference/multimethods) implementation
-  ([`multi`](docs/util.md#multi-dispatchIdentity)).
+  ([`multi`](docs/util.md#multi-dispatchidentity)).
