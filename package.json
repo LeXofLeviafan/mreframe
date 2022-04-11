@@ -1,10 +1,9 @@
 {
   "name": "mreframe",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A reagent/re-frame imitation that uses Mithril instead",
   "main": "index.js",
   "author": "LeXofLeviafan <lexofleviafan@gmail.com>",
-  "homepage": "https://lexofleviafan.github.io/mreframe",
   "license": "MIT",
   "scripts": {
     "install": "cake transpile",
@@ -30,7 +29,7 @@
     "tinyify": "^3.0.0"
   },
   "repository": "github:LeXofLeviafan/mreframe",
-  "homepage": "https://github.com/LeXofLeviafan/mreframe#intro",
+  "homepage": "https://lexofleviafan.github.io/mreframe",
   "bugs": "https://github.com/LeXofLeviafan/mreframe/issues",
   "keywords": ["mithril"]
 }
