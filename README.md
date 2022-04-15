@@ -151,7 +151,7 @@ For further information, see [API reference](#api-reference) below and the follo
 
 # API reference
 
-`mreframe` exposes following submodules:
+[`mreframe`](docs/index.md) exposes following submodules:
 * [`util`](docs/util.md) includes utility functions (which were implemented in mreframe to avoid external dependencies
   and were exposed so that it can be used without dependencies other than Mithril);
 * [`atom`](docs/atom.md) defines a simple equivalent for [Clojure atoms](https://clojure.org/reference/atoms), used for
