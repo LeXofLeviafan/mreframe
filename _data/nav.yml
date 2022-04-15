@@ -1,0 +1,82 @@
+- name: mreframe
+  hint: Home page
+  url:  "/"
+  items:
+    - name: Github (source)
+      url:  "https://github.com/LeXofLeviafan/mreframe"
+    - name: NPM (package)
+      url:  "https://www.npmjs.com/package/mreframe"
+    - name: unpkg (CDN)
+      url:  "https://unpkg.com/mreframe/dist/"
+
+- name: Tutorials
+  items:
+    - name: Reagent [live demo]
+      hint: view / components
+      url:  "/reagent.html"
+    - name: Reagent [static]
+      hint: view / components
+      url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/reagent.md"
+    - name: re-frame [live demo]
+      hint: events / state management
+      url:  "/re-frame.html"
+    - name: re-frame [static]
+      hint: events / state management
+      url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/re-frame.md"
+
+- name: Examples
+  hint: example code
+  items:
+    - name: Reagent form-2 components + Reagent/Mithril interop
+      hint: (scripted in JavaScript)
+      url:  "/examples/reagent.js.html"
+    - name: Reagent form-2 components + Reagent/Mithril interop [source]
+      hint: (scripted in JavaScript)
+      url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/reagent.js.html"
+    - name: Re-frame state/side-effects management with Reagent components
+      hint: (scripted in CoffeeScript)
+      url:  "/examples/re-frame.coffee.html"
+    - name: Re-frame state/side-effects management with Reagent components [source]
+      hint: (scripted in CoffeeScript)
+      url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/re-frame.coffee.html"
+    - name: Routing using m.route (from external Mithril bundle, connected via _init)
+      hint: (scripted in Wisp)
+      url:  "/examples/route.wisp.html"
+    - name: Routing using m.route (from external Mithril bundle, connected via _init) [source]
+      hint: (scripted in Wisp)
+      url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/route.wisp.html"
+    - name: Rendering HTML from Reagent components using mithril-node-render [source]
+      hint: (scripted in CoffeeScript)
+      url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/node-render.coffee"
+    - name: tutorials [source]
+      hint: source code of the Reagent / re-frame tutorials
+      url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/tutorial/"
+
+- name: Docs
+  hint: API documentation
+  items:
+    - name: mreframe
+      hint: main module
+      url:  "/docs/"
+    - name: mreframe/util
+      hint: utility submodule
+      url:  "/docs/util.html"
+    - name: mreframe/atom
+      hint: atom (data storing mechanism) submodule
+      url:  "/docs/atom.html"
+    - name: mreframe/reagent
+      hint: view / components submodule
+      url:  "/docs/reagent.html"
+    - name: mreframe/re-frame
+      hint: events / state management submodule
+      url:  "/docs/re-frame.html"
+
+- name: Perftests
+  hint: rendering performance (logged in browser console)
+  items:
+    - name: Mithril
+      hint: slightly modified Mithril perftests (for comparison)
+      url:  "/performance/mithril.html"
+    - name: mreframe
+      hint: the same perftests repurposed to use mreframe
+      url:  "/performance/mreframe.html"

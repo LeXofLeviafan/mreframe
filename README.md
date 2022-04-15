@@ -144,9 +144,13 @@ For further information, see [API reference](#api-reference) below and the follo
 # Examples
 
 * [Reagent form-2 components + Reagent/Mithril interop](examples/reagent.js.html) (scripted in JavaScript)
+  [[source]](https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/reagent.js.html)
 * [Re-frame state/side-effects management with Reagent components](examples/re-frame.coffee.html) (scripted in CoffeeScript)
+  [[source]](https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/re-frame.coffee.html)
 * [Routing using `m.route` (from external Mithril bundle, connected via `_init`)](examples/route.wisp.html) (scripted in Wisp)
-* [Rendering HTML from Reagent components using `mithril-node-render`](examples/node-render.coffee) (scripted in CoffeeScript)
+  [[source]](https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/route.wisp.html)
+* Rendering HTML from Reagent components using `mithril-node-render` (scripted in CoffeeScript)
+  [[source]](https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/node-render.coffee)
 
 
 # API reference

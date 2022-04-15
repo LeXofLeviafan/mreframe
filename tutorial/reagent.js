@@ -55,7 +55,7 @@ let Href = (href, text, title) => ['a', {href, title, target: '_blank'}, text];
 let Nav = () =>
   ['nav',
     ['ul.nav', "\n ",
-      ['li', [Href, "https://www.npmjs.com/package/mreframe", "mreframe", "mreframe (\"Mithril + re-frame\")"]], "\n",
+      ['li', [Href, "https://lexofleviafan.github.io/mreframe", "mreframe", "mreframe (\"Mithril + re-frame\")"]], "\n",
       ['li', [Href, "https://reagent-project.github.io", "[Reagent]", "Reagent (CLJS)"]], "\n",
       ['li', [Href, "re-frame.html", "re-frame", "re-frame"]], "\n",
       ['li.separator'], "\n",

@@ -1,0 +1,20 @@
+{%- unless include.data -%}
+<li class="separator"></li>
+{%- else -%}
+<li>
+  {% unless include.data.url -%}
+  <span title="{{ include.data.hint }}">{{ include.data.name }}</span>
+  {%- else -%}
+  {%- assign _url = include.data.url | slice: 0 -%}
+  <a href="{{ include.data.url | relative_url }}" title="{{ include.data.hint }}"
+     {%- if _url != "/" %} target="_blank"{% endif %}>{{ include.data.name }}</a>
+  {%- endunless %}
+  {%- if include.data.items %}
+    <ul>
+      {%- for submenu in include.data.items -%}
+        {% include nav-link.html data=submenu %}
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+</li>
+{% endunless -%}

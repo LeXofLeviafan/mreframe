@@ -1,0 +1,5 @@
+<nav><ul>
+  {%- for submenu in site.data.nav %}
+    {% include nav-link.html data=submenu %}
+  {% endfor -%}
+</ul></nav>
