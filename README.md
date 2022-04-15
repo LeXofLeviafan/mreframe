@@ -1,3 +1,5 @@
+[Homepage](https://lexofleviafan.github.io/mreframe)
+
 `mreframe` is a plain JavaScript re-implementation of [`reagent`](http://reagent-project.github.io) and
 [`re-frame`](https://day8.github.io/re-frame) libraries from [ClojureScript](https://clojurescript.org);
 it's a mini-framework for single-page apps (using Mithril as the base renderer, with some interop).
@@ -154,7 +156,7 @@ For further information, see [API reference](#api-reference) below and the follo
 
 # API reference
 
-`mreframe` exposes following submodules:
+[`mreframe`](docs/index.md) exposes following submodules:
 * [`util`](docs/util.md) includes utility functions (which were implemented in mreframe to avoid external dependencies
   and were exposed so that it can be used without dependencies other than Mithril);
 * [`atom`](docs/atom.md) defines a simple equivalent for [Clojure atoms](https://clojure.org/reference/atoms), used for
