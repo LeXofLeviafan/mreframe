@@ -977,13 +977,13 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
   };
 
   exports.assoc = assoc = (o, k, v) => {
-    return merge(o, {
-      [k]: v
-    });
+    o = isArray(o) && Number.isInteger(k) && k >= 0 ? o.slice(0) : {...o};
+    o[k] = v;
+    return o;
   };
 
   exports.dissoc = (o, ...ks) => {
-    o = merge(o);
+    o = isArray(o) ? o.slice(0) : {...o};
     ks.forEach((k) => {
       return delete o[k];
     });
