@@ -91,19 +91,33 @@ o.spec "mreframe/util", ->
   o "assoc()", ->
     a = foo: 1, bar: 1.5
     b = merge a
+    xs = ['a', 'b', 'c']
     o(assoc a, 'baz', 42)
       .deepEquals(foo: 1, bar: 1.5, baz: 42)		"adds a key to a dict"
     o(a).deepEquals(b)					"doesn't mutate arguments"
     o(assoc a, 'bar', 42).deepEquals(foo: 1, bar: 42)	"replaces an existing key"
+    o(assoc xs, 'foo', 42)
+      .deepEquals(0: 'a', 1: 'b', 2: 'c', foo: 42)	"converts lists to dicts"
+    o(assoc xs, 1, 42).deepEquals(['a', 42, 'c'])	"updates lists when using a valid index"
+    o(xs).deepEquals(['a', 'b', 'c'])			"doesn't mutate list argument"
+    o(assoc xs, 9, 42)
+      .deepEquals(['a', 'b', 'c', , , , , , , 42])	"supports producing empty slots"
+    o(assoc xs, '9', 42)
+      .deepEquals(0: 'a', 1: 'b', 2: 'c', 9: 42)	"converts lists to dicts on string keys"
+    o(assoc xs, -2, 42)
+      .deepEquals(0: 'a', 1: 'b', 2: 'c', '-2': 42)	"converts lists to dicts on string keys"
     o(assoc null, 'foo', 42).deepEquals(foo: 42)	"works on null"
     o(assoc undefined, 'foo', 42).deepEquals(foo: 42)	"works on undefined"
 
   o "dissoc()", ->
     a = foo: 1, bar: 1.5, answer: 42
     b = merge a
+    xs = ['a', 'b', 'c']
     o(dissoc a, 'bar').deepEquals(foo: 1, answer: 42)	"works with a single key"
     o(dissoc a, 'bar', 'answer').deepEquals(foo: 1)	"works with multiple keys"
     o(a).deepEquals(b)					"doesn't mutate arguments"
+    o(dissoc xs, 1, 42).deepEquals(['a', , 'c'])	"doesn't change lists into dicts"
+    o(xs).deepEquals(['a', 'b', 'c'])			"doesn't mutate list argument"
     o(dissoc a, 'baz').deepEquals(a)			"works on nonexisting keys"
     o(dissoc null, 'foo').deepEquals({})		"works on null"
     o(dissoc undefined, 'foo').deepEquals({})		"works on undefined"
@@ -113,6 +127,7 @@ o.spec "mreframe/util", ->
     sub = (n, m) -> n - m
     a = foo: 1, bar: 1.5
     b = merge a
+    xs = [1, 2, 3]
     o(update a, 'foo', inc)
       .deepEquals(foo: 2, bar: 1.5)			"applies a function to a key"
     o(a).deepEquals(b)					"doesn't mutate arguments"
@@ -120,6 +135,7 @@ o.spec "mreframe/util", ->
       .deepEquals(foo: 1, bar: -0.5)			"passes value as first argument"
     o(update a, 'baz', identity)
       .deepEquals(foo: 1, bar: 1.5, baz: undefined)	"works on nonexisting keys"
+    o(update xs, 1, sub, 3).deepEquals([1, -1, 3])	"doesn't change lists into dicts"
     o(update null, 'foo', identity)
       .deepEquals(foo: undefined)			"works on null"
     o(update undefined, 'foo', identity)
@@ -137,12 +153,17 @@ o.spec "mreframe/util", ->
   o "assocIn()", ->
     a = foo: bar: baz: 42
     b = foo: bar: baz: 42
+    c = foo: bar: [baz: 42]
     o(a).deepEquals(b)
     o(assocIn a, ['foo', 'bar', 'baz'], 'X')
       .deepEquals(foo: bar: baz: 'X')			"returns a dict with updated deep field"
     o(a).deepEquals(b)					"doesn't mutate the dict"
+    o(assocIn c, ['foo', 'bar', 0, 'baz'], 'X')
+      .deepEquals(foo: bar: [baz: 'X'])			"works on lists"
     o(assocIn a, ['foo', 'baz', 'bar'], 'X')
       .deepEquals(foo: bar: {baz: 42}, baz: {bar: 'X'})	"works on nonexistent paths"
+    o(assocIn c, ['foo', 'bar', 2, 'baz'], 'X')
+      .deepEquals(foo: bar: [{baz: 42}, , {baz: 'X'}])	"works on lists with nonexistent paths"
     o(assocIn a, ['foo'], 'X').deepEquals(foo: 'X')	"replaces paths"
     o(assocIn null, ['foo'], 'X').deepEquals(foo: 'X')	"works on null"
     o(assocIn undefined, ['foo', 'bar'], 'X')
@@ -155,14 +176,19 @@ o.spec "mreframe/util", ->
     sub = (n, m) -> n - m
     a = foo: bar: baz: 42
     b = foo: bar: baz: 42
+    c = foo: bar: [baz: 42]
     o(a).deepEquals(b)
     o(updateIn a, ['foo', 'bar', 'baz'], inc)
       .deepEquals(foo: bar: baz: 43)			"returns a dict with updated deep field"
     o(a).deepEquals(b)					"doesn't mutate the dict"
     o(updateIn a, ['foo', 'bar', 'baz'], sub, 1)
       .deepEquals(foo: bar: baz: 41)			"passes value as the first argument"
+    o(updateIn c, ['foo', 'bar', 0, 'baz'], sub, 1)
+      .deepEquals(foo: bar: [baz: 41])			"works on lists"
     o(updateIn a, ['foo', 'baz', 'bar'], -> 'X')
       .deepEquals(foo: bar: {baz: 42}, baz: {bar: 'X'})	"works on nonexistent paths"
+    o(updateIn c, ['foo', 'bar', 2, 'baz'], -> 'X')
+      .deepEquals(foo: bar: [{baz: 42}, , {baz: 'X'}])	"works on lists with nonexistent paths"
     o(updateIn a, ['foo'], -> 'X').deepEquals(foo: 'X')	"replaces paths"
     o(updateIn null, ['foo'], -> 'X')
       .deepEquals(foo: 'X')				"works on null"

@@ -94,6 +94,10 @@ Returns a copy of dictionary `o` with the value for key `k` set to `v` (alias to
 ```js
 assoc({foo: 1, bar: 2}, 'baz', 3) // ⇒ {foo: 1, bar: 2, baz: 3}
 assoc({foo: 1, bar: 2}, 'foo', 3) // ⇒ {foo: 3, bar: 2}
+assoc([1, 2, 3], 1, 4)            // ⇒ [1, 4, 3]
+assoc([1, 2, 3], 4, 9)            // ⇒ [1, 2, 3, , 9]
+assoc([1, 2, 3], 'foo', 42)       // ⇒ {'0': 1, '1': 2, '2': 3, foo: 42}
+assoc([1, 2, 3], -4, 42)          // ⇒ {'0': 1, '1': 2, '2': 3, '-4': 42}
 assoc(null, 'answer', 42)         // ⇒ {answer: 42}
 ```
 
@@ -101,6 +105,7 @@ assoc(null, 'answer', 42)         // ⇒ {answer: 42}
 Returns a copy of dictionary `o` without the keys `ks`.
 ```js
 dissoc({foo: 1, bar: 2, baz: 3}, 'bar', 'baz') // ⇒ {foo: 1}
+dissoc([1, 2, 3], 1, 4)                        // ⇒ [1, , 3]
 dissoc(null, 'foo')                            // ⇒ {}
 ```
 
@@ -110,6 +115,7 @@ Returns a copy of dictionary `o` with the value `k` updated by calling the funct
 ```js
 update({answer: 42}, 'answer', n => n+1)        // ⇒ {answer: 42}
 update({foo: {bar: 1}}, 'foo', assoc, 'baz', 2) // ⇒ {foo: {bar: 1, baz: 2}}
+update([1, 2, 3], 1, n => n-3)                  // ⇒ [1, -1, 3]
 ```
 
 ### [`getIn (o, path)`](https://clojuredocs.org/clojure.core/get-in)
@@ -129,7 +135,7 @@ Returns a copy of dictionary `o` with the value for `getIn(it, path)` set to `v`
 if part of the path is missing, an empty dict is provided instead (thus, `path` is guaranteed to exist).
 ```js
 assocIn({foo: {bar: 1}}, ['foo', 'bar'], 42)  // ⇒ {foo: {bar: 42}}
-assocIn([{answer: 12}], [0, 'answer'], 42)    // ⇒ {0: {answer: 42}}
+assocIn([{answer: 12}], [0, 'answer'], 42)    // ⇒ [{answer: 42}]
 assocIn({foo: {bar: 1}}, ['baz', 'bar'], 42)  // ⇒ {foo: {bar: 1}, baz: {bar: 42}}
 assocIn(null, ['foo', 'bar'], 42)             // ⇒ {foo: {bar: 42}}
 ```
@@ -139,7 +145,7 @@ Returns a copy of dictionary `o` with the value for `getIn(it, path)` set to `f(
 if part of the path is missing, an empty dict is provided instead (thus, `path` is guaranteed to exist).
 ```js
 updateIn({foo: {bar: 1}}, ['foo', 'bar'], n => n+1)          // ⇒ {foo: {bar: 2}}
-updateIn([{answer: 12}], [0, 'answer'], ((a, b) => a-b), 2)  // ⇒ {0: {answer: 10}}
+updateIn([{answer: 12}], [0, 'answer'], ((a, b) => a-b), 2)  // ⇒ [{answer: 10}]
 updateIn({foo: {bar: 1}}, ['baz', 'bar'], () => 42)          // ⇒ {foo: {bar: 1}, baz: {bar: 42}}
 updateIn(null, ['foo', 'bar'], () => 42)                     // ⇒ {foo: {bar: 42}}
 let dissocIn = (o, path, ...ks) => updateIn(o, path, dissoc, ...ks);

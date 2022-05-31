@@ -10,8 +10,14 @@ exports.isArray = isArray = Array.isArray
 exports.isDict = isDict = (x) => (type x) is Object
 exports.isFn = (x) => (type x) is Function
 exports.merge = merge = (...os) => Object.assign {}, ...os
-exports.assoc = assoc = (o, k, v) => merge o, [k]: v
-exports.dissoc = (o, ...ks) => o = merge o;   ks.forEach((k) => delete o[k]);   o
+exports.assoc = assoc = (o, k, v) =>
+  o = if isArray(o) and Number.isInteger(k) and k >= 0 then o[..] else {o...}
+  o[k] = v
+  o
+exports.dissoc = (o, ...ks) =>
+  o = if isArray(o) then o[..] else {o...}
+  ks.forEach (k) => delete o[k]
+  o
 exports.update = update = (o, k, f, ...args) => assoc o, k, f o?[k], ...args
 exports.getIn = getIn = (o, path) => path.reduce ((x, k) => x?[k]), o
 exports.assocIn = assocIn = (o, path, v) =>
