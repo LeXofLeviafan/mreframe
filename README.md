@@ -1,4 +1,5 @@
 [Homepage](https://lexofleviafan.github.io/mreframe)
+[![Unit tests](https://github.com/LeXofLeviafan/mreframe/actions/workflows/test.yml/badge.svg)](https://github.com/LeXofLeviafan/mreframe/actions/workflows/test.yml)
 
 `mreframe` is a plain JavaScript re-implementation of [`reagent`](http://reagent-project.github.io) and
 [`re-frame`](https://day8.github.io/re-frame) libraries from [ClojureScript](https://clojurescript.org);
