@@ -1,5 +1,6 @@
 [Homepage](https://lexofleviafan.github.io/mreframe)
 [![Unit tests](https://github.com/LeXofLeviafan/mreframe/actions/workflows/test.yml/badge.svg)](https://github.com/LeXofLeviafan/mreframe/actions/workflows/test.yml)
+[![Performance tests](https://github.com/LeXofLeviafan/mreframe/actions/workflows/perftest.yml/badge.svg)](https://github.com/LeXofLeviafan/mreframe/actions/workflows/perftest.yml)
 
 `mreframe` is a plain JavaScript re-implementation of [`reagent`](http://reagent-project.github.io) and
 [`re-frame`](https://day8.github.io/re-frame) libraries from [ClojureScript](https://clojurescript.org);
@@ -9,6 +10,7 @@ it's a mini-framework for single-page apps (using Mithril as the base renderer, 
 * _No language/stack requirement_ – you can use JS directly, or any language that transpiles into it as long as it has interop
 * _Simple, data-centric API_ using native JS data structures and plain functions for rendering, event handling, and querying state
 * Components, events and queries have _no need to expose their inner workings_ beyond the level of a simple function call
+* _Improved performance of re-rendering large, complex UI_ by preventing recalculation of unchanged subtrees
 
 Install: `npm i mreframe`/`yarn add mreframe` or `<script src="https://unpkg.com/mreframe/dist/mreframe.min.js"></script>`.
 
@@ -89,7 +91,9 @@ be found in the following Examples section, as well as in the API reference.
 # Usage
 
 Install the NPM package into a project with `npm i mreframe`/`yarn add mreframe`;  
-or, import as a script in webpage from a CDN: `<script src="https://unpkg.com/mreframe/dist/mreframe.min.js"></script>`.
+or, import as a script in webpage from a CDN: `<script src="https://unpkg.com/mreframe/dist/mreframe.min.js"></script>`.  
+(If you want [routing](https://mithril.js.org/route.html) as well, use this:
+`<script src="https://unpkg.com/mreframe/dist/mreframe-route.min.js"></script>`.)
 
 Access in code by requiring either main module:
 ```js
@@ -123,9 +127,11 @@ For further information, see [API reference](#api-reference) below and the follo
   like [Lodash](https://lodash.com) / [Ramda](https://ramdajs.com) (/ [Rambda](https://selfrefactor.github.io/rambda)).
 * Q: How do I inject raw HTML?  
   A: If you absolutely have to, use [`m.trust`](https://mithril.js.org/trust.html).
+  In `dist/mreframe.min.js` it can be accessed as `require('mithril/hyperscript').trust()`.
 * Q: What about routing?  
   A: Use [Mitrhil routing API](https://mithril.js.org/route.html).
-* Q: But neither is available in `dist/mreframe.min.js`!  
+  In `dist/mreframe-route.min.js` it can be accessed as `require('mithril/route')`.
+* Q: What if I want to use a custom version Mithril (e.g. full distribution or a different version)?  
   A: If you're using JS files from CDN, pick `dist/mreframe-nodeps.min.js` instead, and load Mithril as a separate script;
   then run [`rf._init`](docs/re-frame.md#_init-opts) to connect them.
 * Q: Are there any third-party libraries (components etc.) I can use with this?  
@@ -152,6 +158,8 @@ For further information, see [API reference](#api-reference) below and the follo
   [[live]](https://lexofleviafan.github.io/mreframe/examples/re-frame.coffee.html)
 * [Routing using `m.route` (from external Mithril bundle, connected via `_init`)](examples/route.wisp.html) (scripted in Wisp)
   [[live]](https://lexofleviafan.github.io/mreframe/examples/route.wisp.html)
+* [Routing using `mithril/route` (from `mreframe-route.js`)](examples/route.js.html) (scripted in JavaScript)
+  [[live]](https://lexofleviafan.github.io/mreframe/examples/route.js.html)
 * [Rendering HTML from Reagent components using `mithril-node-render`](examples/node-render.coffee) (scripted in CoffeeScript)
 
 

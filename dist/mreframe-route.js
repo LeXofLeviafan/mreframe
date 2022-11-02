@@ -49,14 +49,634 @@ module.exports = function(render, schedule, console) {
 	return {mount: mount, redraw: redraw}
 }
 
-},{"../render/vnode":8}],2:[function(require,module,exports){
+},{"../render/vnode":16}],2:[function(require,module,exports){
+"use strict"
+
+var Vnode = require("../render/vnode")
+var m = require("../render/hyperscript")
+var Promise = require("../promise/promise")
+
+var buildPathname = require("../pathname/build")
+var parsePathname = require("../pathname/parse")
+var compileTemplate = require("../pathname/compileTemplate")
+var assign = require("../util/assign")
+var censor = require("../util/censor")
+
+var sentinel = {}
+
+function decodeURIComponentSave(component) {
+	try {
+		return decodeURIComponent(component)
+	} catch(e) {
+		return component
+	}
+}
+
+module.exports = function($window, mountRedraw) {
+	var callAsync = $window == null
+		// In case Mithril.js' loaded globally without the DOM, let's not break
+		? null
+		: typeof $window.setImmediate === "function" ? $window.setImmediate : $window.setTimeout
+	var p = Promise.resolve()
+
+	var scheduled = false
+
+	// state === 0: init
+	// state === 1: scheduled
+	// state === 2: done
+	var ready = false
+	var state = 0
+
+	var compiled, fallbackRoute
+
+	var currentResolver = sentinel, component, attrs, currentPath, lastUpdate
+
+	var RouterRoot = {
+		onbeforeupdate: function() {
+			state = state ? 2 : 1
+			return !(!state || sentinel === currentResolver)
+		},
+		onremove: function() {
+			$window.removeEventListener("popstate", fireAsync, false)
+			$window.removeEventListener("hashchange", resolveRoute, false)
+		},
+		view: function() {
+			if (!state || sentinel === currentResolver) return
+			// Wrap in a fragment to preserve existing key semantics
+			var vnode = [Vnode(component, attrs.key, attrs)]
+			if (currentResolver) vnode = currentResolver.render(vnode[0])
+			return vnode
+		},
+	}
+
+	var SKIP = route.SKIP = {}
+
+	function resolveRoute() {
+		scheduled = false
+		// Consider the pathname holistically. The prefix might even be invalid,
+		// but that's not our problem.
+		var prefix = $window.location.hash
+		if (route.prefix[0] !== "#") {
+			prefix = $window.location.search + prefix
+			if (route.prefix[0] !== "?") {
+				prefix = $window.location.pathname + prefix
+				if (prefix[0] !== "/") prefix = "/" + prefix
+			}
+		}
+		// This seemingly useless `.concat()` speeds up the tests quite a bit,
+		// since the representation is consistently a relatively poorly
+		// optimized cons string.
+		var path = prefix.concat()
+			.replace(/(?:%[a-f89][a-f0-9])+/gim, decodeURIComponentSave)
+			.slice(route.prefix.length)
+		var data = parsePathname(path)
+
+		assign(data.params, $window.history.state)
+
+		function reject(e) {
+			console.error(e)
+			setPath(fallbackRoute, null, {replace: true})
+		}
+
+		loop(0)
+		function loop(i) {
+			// state === 0: init
+			// state === 1: scheduled
+			// state === 2: done
+			for (; i < compiled.length; i++) {
+				if (compiled[i].check(data)) {
+					var payload = compiled[i].component
+					var matchedRoute = compiled[i].route
+					var localComp = payload
+					var update = lastUpdate = function(comp) {
+						if (update !== lastUpdate) return
+						if (comp === SKIP) return loop(i + 1)
+						component = comp != null && (typeof comp.view === "function" || typeof comp === "function")? comp : "div"
+						attrs = data.params, currentPath = path, lastUpdate = null
+						currentResolver = payload.render ? payload : null
+						if (state === 2) mountRedraw.redraw()
+						else {
+							state = 2
+							mountRedraw.redraw.sync()
+						}
+					}
+					// There's no understating how much I *wish* I could
+					// use `async`/`await` here...
+					if (payload.view || typeof payload === "function") {
+						payload = {}
+						update(localComp)
+					}
+					else if (payload.onmatch) {
+						p.then(function () {
+							return payload.onmatch(data.params, path, matchedRoute)
+						}).then(update, path === fallbackRoute ? null : reject)
+					}
+					else update("div")
+					return
+				}
+			}
+
+			if (path === fallbackRoute) {
+				throw new Error("Could not resolve default route " + fallbackRoute + ".")
+			}
+			setPath(fallbackRoute, null, {replace: true})
+		}
+	}
+
+	// Set it unconditionally so `m.route.set` and `m.route.Link` both work,
+	// even if neither `pushState` nor `hashchange` are supported. It's
+	// cleared if `hashchange` is used, since that makes it automatically
+	// async.
+	function fireAsync() {
+		if (!scheduled) {
+			scheduled = true
+			// TODO: just do `mountRedraw.redraw()` here and elide the timer
+			// dependency. Note that this will muck with tests a *lot*, so it's
+			// not as easy of a change as it sounds.
+			callAsync(resolveRoute)
+		}
+	}
+
+	function setPath(path, data, options) {
+		path = buildPathname(path, data)
+		if (ready) {
+			fireAsync()
+			var state = options ? options.state : null
+			var title = options ? options.title : null
+			if (options && options.replace) $window.history.replaceState(state, title, route.prefix + path)
+			else $window.history.pushState(state, title, route.prefix + path)
+		}
+		else {
+			$window.location.href = route.prefix + path
+		}
+	}
+
+	function route(root, defaultRoute, routes) {
+		if (!root) throw new TypeError("DOM element being rendered to does not exist.")
+
+		compiled = Object.keys(routes).map(function(route) {
+			if (route[0] !== "/") throw new SyntaxError("Routes must start with a '/'.")
+			if ((/:([^\/\.-]+)(\.{3})?:/).test(route)) {
+				throw new SyntaxError("Route parameter names must be separated with either '/', '.', or '-'.")
+			}
+			return {
+				route: route,
+				component: routes[route],
+				check: compileTemplate(route),
+			}
+		})
+		fallbackRoute = defaultRoute
+		if (defaultRoute != null) {
+			var defaultData = parsePathname(defaultRoute)
+
+			if (!compiled.some(function (i) { return i.check(defaultData) })) {
+				throw new ReferenceError("Default route doesn't match any known routes.")
+			}
+		}
+
+		if (typeof $window.history.pushState === "function") {
+			$window.addEventListener("popstate", fireAsync, false)
+		} else if (route.prefix[0] === "#") {
+			$window.addEventListener("hashchange", resolveRoute, false)
+		}
+
+		ready = true
+		mountRedraw.mount(root, RouterRoot)
+		resolveRoute()
+	}
+	route.set = function(path, data, options) {
+		if (lastUpdate != null) {
+			options = options || {}
+			options.replace = true
+		}
+		lastUpdate = null
+		setPath(path, data, options)
+	}
+	route.get = function() {return currentPath}
+	route.prefix = "#!"
+	route.Link = {
+		view: function(vnode) {
+			// Omit the used parameters from the rendered element - they are
+			// internal. Also, censor the various lifecycle methods.
+			//
+			// We don't strip the other parameters because for convenience we
+			// let them be specified in the selector as well.
+			var child = m(
+				vnode.attrs.selector || "a",
+				censor(vnode.attrs, ["options", "params", "selector", "onclick"]),
+				vnode.children
+			)
+			var options, onclick, href
+
+			// Let's provide a *right* way to disable a route link, rather than
+			// letting people screw up accessibility on accident.
+			//
+			// The attribute is coerced so users don't get surprised over
+			// `disabled: 0` resulting in a button that's somehow routable
+			// despite being visibly disabled.
+			if (child.attrs.disabled = Boolean(child.attrs.disabled)) {
+				child.attrs.href = null
+				child.attrs["aria-disabled"] = "true"
+				// If you *really* do want add `onclick` on a disabled link, use
+				// an `oncreate` hook to add it.
+			} else {
+				options = vnode.attrs.options
+				onclick = vnode.attrs.onclick
+				// Easier to build it now to keep it isomorphic.
+				href = buildPathname(child.attrs.href, vnode.attrs.params)
+				child.attrs.href = route.prefix + href
+				child.attrs.onclick = function(e) {
+					var result
+					if (typeof onclick === "function") {
+						result = onclick.call(e.currentTarget, e)
+					} else if (onclick == null || typeof onclick !== "object") {
+						// do nothing
+					} else if (typeof onclick.handleEvent === "function") {
+						onclick.handleEvent(e)
+					}
+
+					// Adapted from React Router's implementation:
+					// https://github.com/ReactTraining/react-router/blob/520a0acd48ae1b066eb0b07d6d4d1790a1d02482/packages/react-router-dom/modules/Link.js
+					//
+					// Try to be flexible and intuitive in how we handle links.
+					// Fun fact: links aren't as obvious to get right as you
+					// would expect. There's a lot more valid ways to click a
+					// link than this, and one might want to not simply click a
+					// link, but right click or command-click it to copy the
+					// link target, etc. Nope, this isn't just for blind people.
+					if (
+						// Skip if `onclick` prevented default
+						result !== false && !e.defaultPrevented &&
+						// Ignore everything but left clicks
+						(e.button === 0 || e.which === 0 || e.which === 1) &&
+						// Let the browser handle `target=_blank`, etc.
+						(!e.currentTarget.target || e.currentTarget.target === "_self") &&
+						// No modifier keys
+						!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey
+					) {
+						e.preventDefault()
+						e.redraw = false
+						route.set(href, null, options)
+					}
+				}
+			}
+			return child
+		},
+	}
+	route.param = function(key) {
+		return attrs && key != null ? attrs[key] : attrs
+	}
+
+	return route
+}
+
+},{"../pathname/build":4,"../pathname/compileTemplate":5,"../pathname/parse":6,"../promise/promise":8,"../render/hyperscript":12,"../render/vnode":16,"../util/assign":17,"../util/censor":18}],3:[function(require,module,exports){
 "use strict"
 
 var render = require("./render")
 
 module.exports = require("./api/mount-redraw")(render, typeof requestAnimationFrame !== "undefined" ? requestAnimationFrame : null, typeof console !== "undefined" ? console : null)
 
-},{"./api/mount-redraw":1,"./render":"mithril/render"}],3:[function(require,module,exports){
+},{"./api/mount-redraw":1,"./render":"mithril/render"}],4:[function(require,module,exports){
+"use strict"
+
+var buildQueryString = require("../querystring/build")
+var assign = require("../util/assign")
+
+// Returns `path` from `template` + `params`
+module.exports = function(template, params) {
+	if ((/:([^\/\.-]+)(\.{3})?:/).test(template)) {
+		throw new SyntaxError("Template parameter names must be separated by either a '/', '-', or '.'.")
+	}
+	if (params == null) return template
+	var queryIndex = template.indexOf("?")
+	var hashIndex = template.indexOf("#")
+	var queryEnd = hashIndex < 0 ? template.length : hashIndex
+	var pathEnd = queryIndex < 0 ? queryEnd : queryIndex
+	var path = template.slice(0, pathEnd)
+	var query = {}
+
+	assign(query, params)
+
+	var resolved = path.replace(/:([^\/\.-]+)(\.{3})?/g, function(m, key, variadic) {
+		delete query[key]
+		// If no such parameter exists, don't interpolate it.
+		if (params[key] == null) return m
+		// Escape normal parameters, but not variadic ones.
+		return variadic ? params[key] : encodeURIComponent(String(params[key]))
+	})
+
+	// In case the template substitution adds new query/hash parameters.
+	var newQueryIndex = resolved.indexOf("?")
+	var newHashIndex = resolved.indexOf("#")
+	var newQueryEnd = newHashIndex < 0 ? resolved.length : newHashIndex
+	var newPathEnd = newQueryIndex < 0 ? newQueryEnd : newQueryIndex
+	var result = resolved.slice(0, newPathEnd)
+
+	if (queryIndex >= 0) result += template.slice(queryIndex, queryEnd)
+	if (newQueryIndex >= 0) result += (queryIndex < 0 ? "?" : "&") + resolved.slice(newQueryIndex, newQueryEnd)
+	var querystring = buildQueryString(query)
+	if (querystring) result += (queryIndex < 0 && newQueryIndex < 0 ? "?" : "&") + querystring
+	if (hashIndex >= 0) result += template.slice(hashIndex)
+	if (newHashIndex >= 0) result += (hashIndex < 0 ? "" : "&") + resolved.slice(newHashIndex)
+	return result
+}
+
+},{"../querystring/build":9,"../util/assign":17}],5:[function(require,module,exports){
+"use strict"
+
+var parsePathname = require("./parse")
+
+// Compiles a template into a function that takes a resolved path (without query
+// strings) and returns an object containing the template parameters with their
+// parsed values. This expects the input of the compiled template to be the
+// output of `parsePathname`. Note that it does *not* remove query parameters
+// specified in the template.
+module.exports = function(template) {
+	var templateData = parsePathname(template)
+	var templateKeys = Object.keys(templateData.params)
+	var keys = []
+	var regexp = new RegExp("^" + templateData.path.replace(
+		// I escape literal text so people can use things like `:file.:ext` or
+		// `:lang-:locale` in routes. This is all merged into one pass so I
+		// don't also accidentally escape `-` and make it harder to detect it to
+		// ban it from template parameters.
+		/:([^\/.-]+)(\.{3}|\.(?!\.)|-)?|[\\^$*+.()|\[\]{}]/g,
+		function(m, key, extra) {
+			if (key == null) return "\\" + m
+			keys.push({k: key, r: extra === "..."})
+			if (extra === "...") return "(.*)"
+			if (extra === ".") return "([^/]+)\\."
+			return "([^/]+)" + (extra || "")
+		}
+	) + "$")
+	return function(data) {
+		// First, check the params. Usually, there isn't any, and it's just
+		// checking a static set.
+		for (var i = 0; i < templateKeys.length; i++) {
+			if (templateData.params[templateKeys[i]] !== data.params[templateKeys[i]]) return false
+		}
+		// If no interpolations exist, let's skip all the ceremony
+		if (!keys.length) return regexp.test(data.path)
+		var values = regexp.exec(data.path)
+		if (values == null) return false
+		for (var i = 0; i < keys.length; i++) {
+			data.params[keys[i].k] = keys[i].r ? values[i + 1] : decodeURIComponent(values[i + 1])
+		}
+		return true
+	}
+}
+
+},{"./parse":6}],6:[function(require,module,exports){
+"use strict"
+
+var parseQueryString = require("../querystring/parse")
+
+// Returns `{path, params}` from `url`
+module.exports = function(url) {
+	var queryIndex = url.indexOf("?")
+	var hashIndex = url.indexOf("#")
+	var queryEnd = hashIndex < 0 ? url.length : hashIndex
+	var pathEnd = queryIndex < 0 ? queryEnd : queryIndex
+	var path = url.slice(0, pathEnd).replace(/\/{2,}/g, "/")
+
+	if (!path) path = "/"
+	else {
+		if (path[0] !== "/") path = "/" + path
+		if (path.length > 1 && path[path.length - 1] === "/") path = path.slice(0, -1)
+	}
+	return {
+		path: path,
+		params: queryIndex < 0
+			? {}
+			: parseQueryString(url.slice(queryIndex + 1, queryEnd)),
+	}
+}
+
+},{"../querystring/parse":10}],7:[function(require,module,exports){
+(function (setImmediate){(function (){
+"use strict"
+/** @constructor */
+var PromisePolyfill = function(executor) {
+	if (!(this instanceof PromisePolyfill)) throw new Error("Promise must be called with 'new'.")
+	if (typeof executor !== "function") throw new TypeError("executor must be a function.")
+
+	var self = this, resolvers = [], rejectors = [], resolveCurrent = handler(resolvers, true), rejectCurrent = handler(rejectors, false)
+	var instance = self._instance = {resolvers: resolvers, rejectors: rejectors}
+	var callAsync = typeof setImmediate === "function" ? setImmediate : setTimeout
+	function handler(list, shouldAbsorb) {
+		return function execute(value) {
+			var then
+			try {
+				if (shouldAbsorb && value != null && (typeof value === "object" || typeof value === "function") && typeof (then = value.then) === "function") {
+					if (value === self) throw new TypeError("Promise can't be resolved with itself.")
+					executeOnce(then.bind(value))
+				}
+				else {
+					callAsync(function() {
+						if (!shouldAbsorb && list.length === 0) console.error("Possible unhandled promise rejection:", value)
+						for (var i = 0; i < list.length; i++) list[i](value)
+						resolvers.length = 0, rejectors.length = 0
+						instance.state = shouldAbsorb
+						instance.retry = function() {execute(value)}
+					})
+				}
+			}
+			catch (e) {
+				rejectCurrent(e)
+			}
+		}
+	}
+	function executeOnce(then) {
+		var runs = 0
+		function run(fn) {
+			return function(value) {
+				if (runs++ > 0) return
+				fn(value)
+			}
+		}
+		var onerror = run(rejectCurrent)
+		try {then(run(resolveCurrent), onerror)} catch (e) {onerror(e)}
+	}
+
+	executeOnce(executor)
+}
+PromisePolyfill.prototype.then = function(onFulfilled, onRejection) {
+	var self = this, instance = self._instance
+	function handle(callback, list, next, state) {
+		list.push(function(value) {
+			if (typeof callback !== "function") next(value)
+			else try {resolveNext(callback(value))} catch (e) {if (rejectNext) rejectNext(e)}
+		})
+		if (typeof instance.retry === "function" && state === instance.state) instance.retry()
+	}
+	var resolveNext, rejectNext
+	var promise = new PromisePolyfill(function(resolve, reject) {resolveNext = resolve, rejectNext = reject})
+	handle(onFulfilled, instance.resolvers, resolveNext, true), handle(onRejection, instance.rejectors, rejectNext, false)
+	return promise
+}
+PromisePolyfill.prototype.catch = function(onRejection) {
+	return this.then(null, onRejection)
+}
+PromisePolyfill.prototype.finally = function(callback) {
+	return this.then(
+		function(value) {
+			return PromisePolyfill.resolve(callback()).then(function() {
+				return value
+			})
+		},
+		function(reason) {
+			return PromisePolyfill.resolve(callback()).then(function() {
+				return PromisePolyfill.reject(reason);
+			})
+		}
+	)
+}
+PromisePolyfill.resolve = function(value) {
+	if (value instanceof PromisePolyfill) return value
+	return new PromisePolyfill(function(resolve) {resolve(value)})
+}
+PromisePolyfill.reject = function(value) {
+	return new PromisePolyfill(function(resolve, reject) {reject(value)})
+}
+PromisePolyfill.all = function(list) {
+	return new PromisePolyfill(function(resolve, reject) {
+		var total = list.length, count = 0, values = []
+		if (list.length === 0) resolve([])
+		else for (var i = 0; i < list.length; i++) {
+			(function(i) {
+				function consume(value) {
+					count++
+					values[i] = value
+					if (count === total) resolve(values)
+				}
+				if (list[i] != null && (typeof list[i] === "object" || typeof list[i] === "function") && typeof list[i].then === "function") {
+					list[i].then(consume, reject)
+				}
+				else consume(list[i])
+			})(i)
+		}
+	})
+}
+PromisePolyfill.race = function(list) {
+	return new PromisePolyfill(function(resolve, reject) {
+		for (var i = 0; i < list.length; i++) {
+			list[i].then(resolve, reject)
+		}
+	})
+}
+
+module.exports = PromisePolyfill
+
+}).call(this)}).call(this,require("timers").setImmediate)
+},{"timers":21}],8:[function(require,module,exports){
+(function (global){(function (){
+/* global window */
+"use strict"
+
+var PromisePolyfill = require("./polyfill")
+
+if (typeof window !== "undefined") {
+	if (typeof window.Promise === "undefined") {
+		window.Promise = PromisePolyfill
+	} else if (!window.Promise.prototype.finally) {
+		window.Promise.prototype.finally = PromisePolyfill.prototype.finally
+	}
+	module.exports = window.Promise
+} else if (typeof global !== "undefined") {
+	if (typeof global.Promise === "undefined") {
+		global.Promise = PromisePolyfill
+	} else if (!global.Promise.prototype.finally) {
+		global.Promise.prototype.finally = PromisePolyfill.prototype.finally
+	}
+	module.exports = global.Promise
+} else {
+	module.exports = PromisePolyfill
+}
+
+}).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./polyfill":7}],9:[function(require,module,exports){
+"use strict"
+
+module.exports = function(object) {
+	if (Object.prototype.toString.call(object) !== "[object Object]") return ""
+
+	var args = []
+	for (var key in object) {
+		destructure(key, object[key])
+	}
+
+	return args.join("&")
+
+	function destructure(key, value) {
+		if (Array.isArray(value)) {
+			for (var i = 0; i < value.length; i++) {
+				destructure(key + "[" + i + "]", value[i])
+			}
+		}
+		else if (Object.prototype.toString.call(value) === "[object Object]") {
+			for (var i in value) {
+				destructure(key + "[" + i + "]", value[i])
+			}
+		}
+		else args.push(encodeURIComponent(key) + (value != null && value !== "" ? "=" + encodeURIComponent(value) : ""))
+	}
+}
+
+},{}],10:[function(require,module,exports){
+"use strict"
+
+function decodeURIComponentSave(str) {
+	try {
+		return decodeURIComponent(str)
+	} catch(err) {
+		return str
+	}
+}
+
+module.exports = function(string) {
+	if (string === "" || string == null) return {}
+	if (string.charAt(0) === "?") string = string.slice(1)
+
+	var entries = string.split("&"), counters = {}, data = {}
+	for (var i = 0; i < entries.length; i++) {
+		var entry = entries[i].split("=")
+		var key = decodeURIComponentSave(entry[0])
+		var value = entry.length === 2 ? decodeURIComponentSave(entry[1]) : ""
+
+		if (value === "true") value = true
+		else if (value === "false") value = false
+
+		var levels = key.split(/\]\[?|\[/)
+		var cursor = data
+		if (key.indexOf("[") > -1) levels.pop()
+		for (var j = 0; j < levels.length; j++) {
+			var level = levels[j], nextLevel = levels[j + 1]
+			var isNumber = nextLevel == "" || !isNaN(parseInt(nextLevel, 10))
+			if (level === "") {
+				var key = levels.slice(0, j).join()
+				if (counters[key] == null) {
+					counters[key] = Array.isArray(cursor) ? cursor.length : 0
+				}
+				level = counters[key]++
+			}
+			// Disallow direct prototype pollution
+			else if (level === "__proto__") break
+			if (j === levels.length - 1) cursor[level] = value
+			else {
+				// Read own properties exclusively to disallow indirect
+				// prototype pollution
+				var desc = Object.getOwnPropertyDescriptor(cursor, level)
+				if (desc != null) desc = desc.value
+				if (desc == null) cursor[level] = desc = isNumber ? [] : {}
+				cursor = desc
+			}
+		}
+	}
+	return data
+}
+
+},{}],11:[function(require,module,exports){
 "use strict"
 
 var Vnode = require("../render/vnode")
@@ -70,7 +690,7 @@ module.exports = function() {
 	return vnode
 }
 
-},{"../render/vnode":8,"./hyperscriptVnode":5}],4:[function(require,module,exports){
+},{"../render/vnode":16,"./hyperscriptVnode":13}],12:[function(require,module,exports){
 "use strict"
 
 var Vnode = require("../render/vnode")
@@ -165,7 +785,7 @@ function hyperscript(selector) {
 
 module.exports = hyperscript
 
-},{"../render/vnode":8,"../util/hasOwn":9,"./hyperscriptVnode":5}],5:[function(require,module,exports){
+},{"../render/vnode":16,"../util/hasOwn":19,"./hyperscriptVnode":13}],13:[function(require,module,exports){
 "use strict"
 
 var Vnode = require("../render/vnode")
@@ -220,7 +840,7 @@ module.exports = function() {
 	return Vnode("", attrs.key, attrs, children)
 }
 
-},{"../render/vnode":8}],6:[function(require,module,exports){
+},{"../render/vnode":16}],14:[function(require,module,exports){
 "use strict"
 
 var Vnode = require("../render/vnode")
@@ -1205,7 +1825,7 @@ module.exports = function($window) {
 	}
 }
 
-},{"../render/vnode":8}],7:[function(require,module,exports){
+},{"../render/vnode":16}],15:[function(require,module,exports){
 "use strict"
 
 var Vnode = require("../render/vnode")
@@ -1215,7 +1835,7 @@ module.exports = function(html) {
 	return Vnode("<", undefined, undefined, html, undefined, undefined)
 }
 
-},{"../render/vnode":8}],8:[function(require,module,exports){
+},{"../render/vnode":16}],16:[function(require,module,exports){
 "use strict"
 
 function Vnode(tag, key, attrs, children, text, dom) {
@@ -1252,13 +1872,340 @@ Vnode.normalizeChildren = function(input) {
 
 module.exports = Vnode
 
-},{}],9:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
+// This exists so I'm only saving it once.
+"use strict"
+
+var hasOwn = require("./hasOwn")
+
+module.exports = Object.assign || function(target, source) {
+	for (var key in source) {
+		if (hasOwn.call(source, key)) target[key] = source[key]
+	}
+}
+
+},{"./hasOwn":19}],18:[function(require,module,exports){
+"use strict"
+
+// Note: this is mildly perf-sensitive.
+//
+// It does *not* use `delete` - dynamic `delete`s usually cause objects to bail
+// out into dictionary mode and just generally cause a bunch of optimization
+// issues within engines.
+//
+// Ideally, I would've preferred to do this, if it weren't for the optimization
+// issues:
+//
+// ```js
+// const hasOwn = require("./hasOwn")
+// const magic = [
+//     "key", "oninit", "oncreate", "onbeforeupdate", "onupdate",
+//     "onbeforeremove", "onremove",
+// ]
+// module.exports = (attrs, extras) => {
+//     const result = Object.assign(Object.create(null), attrs)
+//     for (const key of magic) delete result[key]
+//     if (extras != null) for (const key of extras) delete result[key]
+//     return result
+// }
+// ```
+
+var hasOwn = require("./hasOwn")
+// Words in RegExp literals are sometimes mangled incorrectly by the internal bundler, so use RegExp().
+var magic = new RegExp("^(?:key|oninit|oncreate|onbeforeupdate|onupdate|onbeforeremove|onremove)$")
+
+module.exports = function(attrs, extras) {
+	var result = {}
+
+	if (extras != null) {
+		for (var key in attrs) {
+			if (hasOwn.call(attrs, key) && !magic.test(key) && extras.indexOf(key) < 0) {
+				result[key] = attrs[key]
+			}
+		}
+	} else {
+		for (var key in attrs) {
+			if (hasOwn.call(attrs, key) && !magic.test(key)) {
+				result[key] = attrs[key]
+			}
+		}
+	}
+
+	return result
+}
+
+},{"./hasOwn":19}],19:[function(require,module,exports){
 // This exists so I'm only saving it once.
 "use strict"
 
 module.exports = {}.hasOwnProperty
 
-},{}],10:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+},{}],21:[function(require,module,exports){
+(function (setImmediate,clearImmediate){(function (){
+var nextTick = require('process/browser.js').nextTick;
+var apply = Function.prototype.apply;
+var slice = Array.prototype.slice;
+var immediateIds = {};
+var nextImmediateId = 0;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) { timeout.close(); };
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(window, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// That's not how node.js implements it but the exposed api is the same.
+exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
+  var id = nextImmediateId++;
+  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
+
+  immediateIds[id] = true;
+
+  nextTick(function onNextTick() {
+    if (immediateIds[id]) {
+      // fn.call() is faster so we optimize for the common use-case
+      // @see http://jsperf.com/call-apply-segu
+      if (args) {
+        fn.apply(null, args);
+      } else {
+        fn.call(null);
+      }
+      // Prevent ids from leaking
+      exports.clearImmediate(id);
+    }
+  });
+
+  return id;
+};
+
+exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
+  delete immediateIds[id];
+};
+}).call(this)}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
+},{"process/browser.js":20,"timers":21}],22:[function(require,module,exports){
 (function() {
   var Atom, compareAndSet, deref, multi, reset, resetVals, swap, swapVals, type;
 
@@ -1307,7 +2254,7 @@ module.exports = {}.hasOwnProperty
 
 }).call(this);
 
-},{"./util":13}],11:[function(require,module,exports){
+},{"./util":25}],23:[function(require,module,exports){
 (function() {
 
   /*
@@ -1800,7 +2747,7 @@ module.exports = {}.hasOwnProperty
 
 }).call(this);
 
-},{"./atom":10,"./reagent":12,"./util":13}],12:[function(require,module,exports){
+},{"./atom":22,"./reagent":24,"./util":25}],24:[function(require,module,exports){
 (function() {
   var RAtom, RCursor, _createElement, _cursor, _detectChanges, _eqArgs, _fnElement, _fragment_, _meta, _mithril_, _mount_, _moveParent, _propagate, _quiet, _quietEvents, _redraw_, _renderCache, _rendering, _vnode, argv, asElement, assocIn, atom, children, classNames, deref, eqShallow, getIn, identical, identity, isArray, keys, merge, prepareAttrs, props, ratom, reset, second, stateAtom, swap;
 
@@ -2176,7 +3123,7 @@ module.exports = {}.hasOwnProperty
 
 }).call(this);
 
-},{"./atom":10,"./util":13}],13:[function(require,module,exports){
+},{"./atom":22,"./util":25}],25:[function(require,module,exports){
 (function() {
   var _dict, _entries, assoc, assocIn, entries, eq, eqArr, eqObj, eqObjShallow, eqShallow, flatten, getIn, identical, identity, isArray, isDict, keys, merge, replacer, sorter, type, update, vals;
 
@@ -2383,28 +3330,35 @@ hyperscript.fragment = require("./render/fragment")
 
 module.exports = hyperscript
 
-},{"./render/fragment":3,"./render/hyperscript":4,"./render/trust":7}],"mithril/mount":[function(require,module,exports){
+},{"./render/fragment":11,"./render/hyperscript":12,"./render/trust":15}],"mithril/mount":[function(require,module,exports){
 "use strict"
 
 module.exports = require("./mount-redraw").mount
 
-},{"./mount-redraw":2}],"mithril/redraw":[function(require,module,exports){
+},{"./mount-redraw":3}],"mithril/redraw":[function(require,module,exports){
 "use strict"
 
 module.exports = require("./mount-redraw").redraw
 
-},{"./mount-redraw":2}],"mithril/render":[function(require,module,exports){
+},{"./mount-redraw":3}],"mithril/render":[function(require,module,exports){
 "use strict"
 
 module.exports = require("./render/render")(typeof window !== "undefined" ? window : null)
 
-},{"./render/render":6}],"mreframe/atom":[function(require,module,exports){
+},{"./render/render":14}],"mithril/route":[function(require,module,exports){
+"use strict"
+
+var mountRedraw = require("./mount-redraw")
+
+module.exports = require("./api/router")(typeof window !== "undefined" ? window : null, mountRedraw)
+
+},{"./api/router":2,"./mount-redraw":3}],"mreframe/atom":[function(require,module,exports){
 (function() {
   module.exports = require('./src/atom');
 
 }).call(this);
 
-},{"./src/atom":10}],"mreframe/re-frame":[function(require,module,exports){
+},{"./src/atom":22}],"mreframe/re-frame":[function(require,module,exports){
 (function() {
   var hyperscript, mount, reFrame, redraw;
 
@@ -2420,7 +3374,7 @@ module.exports = require("./render/render")(typeof window !== "undefined" ? wind
 
 }).call(this);
 
-},{"./src/re-frame":11,"mithril/hyperscript":"mithril/hyperscript","mithril/mount":"mithril/mount","mithril/redraw":"mithril/redraw"}],"mreframe/reagent":[function(require,module,exports){
+},{"./src/re-frame":23,"mithril/hyperscript":"mithril/hyperscript","mithril/mount":"mithril/mount","mithril/redraw":"mithril/redraw"}],"mreframe/reagent":[function(require,module,exports){
 (function() {
   var hyperscript, mount, reagent, redraw;
 
@@ -2436,13 +3390,13 @@ module.exports = require("./render/render")(typeof window !== "undefined" ? wind
 
 }).call(this);
 
-},{"./src/reagent":12,"mithril/hyperscript":"mithril/hyperscript","mithril/mount":"mithril/mount","mithril/redraw":"mithril/redraw"}],"mreframe/util":[function(require,module,exports){
+},{"./src/reagent":24,"mithril/hyperscript":"mithril/hyperscript","mithril/mount":"mithril/mount","mithril/redraw":"mithril/redraw"}],"mreframe/util":[function(require,module,exports){
 (function() {
   module.exports = require('./src/util');
 
 }).call(this);
 
-},{"./src/util":13}],"mreframe":[function(require,module,exports){
+},{"./src/util":25}],"mreframe":[function(require,module,exports){
 (function() {
   var _init, atom, exports, hyperscript, mount, reFrame, reagent, redraw, util;
 

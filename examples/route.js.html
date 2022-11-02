@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="UTF-8"/>
+  <title>mreframe routing example (with route script)</title>
+  <script src="../dist/mreframe-route.js"></script>
+  <style>nav > a {text-transform: capitalize}  nav > button {margin-left: 1ex}  main {background: lightgrey}</style>
+</head><body>
+  <script>
+    let [Route, {reagent: r, reFrame: rf, util: {getIn}}] = ['mithril/route', 'mreframe'].map(require);
+
+    const URIS = ['foo', 'bar', 'baz', 'foo/bar', 'foo/bar/baz'];
+
+    // interop with m.route
+    let uriName = ({first, rest}={}) => (!rest ? first||"" : `${first}/${rest}`);
+    rf.regSub('view', getIn);
+    rf.regSub('viewParams', getIn);
+    rf.regSub('uri-name', '<-', ['viewParams'], uriName)
+
+    rf.regFx('nav', args => Route.set(...args));
+    rf.regFx('prompt', ({msg, value, onSuccess, onFailure}) => {
+      let input = prompt(msg, value);
+      rf.disp((input != null ? onSuccess : onFailure), input);
+    });
+
+    rf.regEventFx('navigate', [rf.trimV], (_, nav) => ({nav}));
+    rf.regEventDb('set-view', [rf.trimV], (db, [view, viewParams]) => ({...db, view, viewParams}));
+    rf.regEventFx('nav-button', ({db: {viewParams}}) =>
+      ({prompt: {msg: "Navigate to:", value: uriName(viewParams), onSuccess: ['navigate']}}));
+
+    // components
+    let NavLink = (view, disabled) =>
+      ['>', Route.Link, {href: `/${view}`, disabled},
+        view || "home"];
+
+    let Header = () =>
+      ['div.header',
+        ['h1', document.title],
+        ['nav',
+          ...["", ...URIS].map(s => ['<>', " ", [NavLink, s, s == rf.dsub(['uri-name'])]]),
+          ['button', {onclick: () => rf.disp(['nav-button'])}, "other…"]],
+        ['h3', "View: ", rf.dsub(['view'])]];
+
+    let Tab = uri => // uri is taken directly from router
+      ['<>',
+        [Header],
+        ['main', ['h2', "Uri: ", uri]]];
+    let Tab_ = (args) => [Tab, "~" + uriName(args)];
+
+    // routing, synced with db
+    let _upd   = id => vnode => rf.disp(['set-view', id, r.props(vnode)]);
+    let _route = (id, render) => ({oninit: _upd(id),  onupdate: _upd(id),  view: render});
+    Route(document.body, "/", {
+      "/":                _route('root', () => r.asElement([Header])),
+      "/:first":          _route('tab',  it => r.asElement([Tab, r.props(it).first])),
+      "/:first/:rest...": _route('tab*', it => r.asElement([Tab_, r.props(it)])),
+    });
+  </script>
+</body></html>
