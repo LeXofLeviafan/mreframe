@@ -2,6 +2,7 @@
 
 modules = ['util', 'atom', 'reagent', 're-frame']
 deps = "mithril/mount,mithril/render,mithril/redraw,mithril/hyperscript"
+depsRoute = "#{deps},mithril/route"
 
 option '-o', '--outfile [FILE]', "output filename ('.min' is added automatically when minifying)"
 option '-m', '--minify', "minify the bundle"
@@ -27,6 +28,9 @@ buildNodeps = (options) ->
 buildStandalone = (options) ->
   build {outfile: "dist/mreframe.js", modules, expose: deps, ...options}
 
+buildRoute = (options) ->
+  build {outfile: "dist/mreframe-route.js", modules, expose: depsRoute, ...options}
+
 task 'transpile', "transpile coffeescript files", ->
   for dir in ['.', './src', './examples'] when fs.existsSync(dir)
     for s in fs.readdirSync(dir) when s.match /\.coffee$/
@@ -37,9 +41,10 @@ task 'transpile', "transpile coffeescript files", ->
   @
 
 task 'build', "build a standalone bundle", buildStandalone
+task 'build:route', "build with 'mithril/route' included", buildRoute
 task 'build:nodeps', "build without including mithril dependencies", buildNodeps
 task 'build:all', "build all bundles (regular and minified)", ->
-  for f in [buildStandalone, buildNodeps]
+  for f in [buildStandalone, buildNodeps, buildRoute]
     f {}
     f minify: on
 

@@ -45,6 +45,12 @@
     - name: Routing using m.route (from external Mithril bundle, connected via _init) [source]
       hint: (scripted in Wisp)
       url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/route.wisp.html"
+    - name: Routing using mithril/route (from mreframe-route.js)
+      hint: (scripted in JavaScript)
+      url:  "/examples/route.js.html"
+    - name: Routing using mithril/route (from mreframe-route.js) [source]
+      hint: (scripted in JavaScript)
+      url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/route.js.html"
     - name: Rendering HTML from Reagent components using mithril-node-render [source]
       hint: (scripted in CoffeeScript)
       url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/node-render.coffee"

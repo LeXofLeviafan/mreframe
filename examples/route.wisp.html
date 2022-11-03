@@ -5,7 +5,7 @@
   <script src="../dist/mreframe-nodeps.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mithril/2.0.4/mithril.min.js"></script>
   <script src="https://unpkg.com/wisp@0.13.0/dist/wisp.min.js"></script>
-  <style>nav > a {text-transform: capitalize}  main {background: lightgrey}</style>
+  <style>nav > a {text-transform: capitalize}  nav > button {margin-left: 1ex}  main {background: lightgrey}</style>
 </head><body>
   <script type="application/wisp">
     (ns script
@@ -24,12 +24,19 @@
     (rf.reg-sub :uri-name :<- [:view-params] uri-name)
 
     (rf.reg-fx :nav #(apply m.route.set %))
+    (let [-prompt (fn [{:strs [msg value on-success on-failure]}]
+                    (let [input (prompt msg value)]
+                      (rf.disp (if-not (nil? input) on-success on-failure) input)))]
+      (rf.reg-fx :prompt -prompt))
 
-    (rf.reg-event-fx :navigate [rf.trimV]
+    (rf.reg-event-fx :navigate [rf.trim-v]
       (fn [_ args] {:nav args}))
-    (rf.reg-event-db :set-view [rf.trimV]
+    (rf.reg-event-db :set-view [rf.trim-v]
       (fn [db [id params]]
         (merge db {:view id, :view-params params})))
+    (rf.reg-event-fx :nav-button
+      (fn [{db :db}]
+        {:prompt {:msg "", :value (-> db :view-params uri-name), :on-success [:navigate]}}))
 
     ;; components
     (defn nav-link [view disabled]
@@ -40,9 +47,10 @@
       (let [[view uri] (for [k [:view :uri-name]] @(rf.subscribe [k]))]
         [:div.header
           [:h1 document.title]
-          (into [:nav]
-            (for [s (cons "" uris)]
-              [:<> " " [nav-link s (= s uri)]]))
+          (-> [:nav]
+              (into (for [s (cons "" uris)]
+                      [:<> " " [nav-link s (= s uri)]]))
+              (conj [:button {:onclick #(rf.dispatch [:nav-button])} "other…"]))
           [:h3 "View: " view]]))
 
     (defn tab [uri] ; uri is taken directly from router

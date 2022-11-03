@@ -45,7 +45,7 @@ if (isDOM) {
 	r._init({...m, hyperscript: m});
 } else {
 	/* eslint-disable global-require */
-	global.window = require('../node_modules/mithril/test-utils/browserMock')()
+	global.window = require('./domMock')(); // borrowed from Mithril repo
 	global.document = window.document
 	// We're benchmarking renders, not our throttling.
 	global.requestAnimationFrame = function () {
