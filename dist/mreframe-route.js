@@ -3176,7 +3176,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   };
 
   exports.isFn = (x) => {
-    return (type(x)) === Function;
+    return (typeof x) === 'function';
   };
 
   exports.merge = merge = (...os) => {

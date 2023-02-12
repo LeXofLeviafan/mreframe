@@ -115,7 +115,7 @@ Creates a Reagent component based on provided hook methods (mostly based on Cloj
 - `shouldComponentUpdate` [checks if there's a need for update](https://mithril.js.org/lifecycle-methods.html#onbeforeupdate)
 - `beforeComponentUnmounts` [runs pre-removal code/promise for the root of a subtree that is being removed](https://mithril.js.org/lifecycle-methods.html#onbeforeremove)
 - `render` renders a Mithril component (see [`view`](https://mithril.js.org/components.html) method)
-- `renderReagent` is the same as `render` but renders Hiccup instead (same as function components)
+- `reagentRender` is the same as `render` but renders Hiccup instead (same as function components)
 
 **Note:** `shouldComponentUpdate` overrites Reagent changes detection
 

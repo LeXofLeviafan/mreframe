@@ -8,7 +8,7 @@ _dict = Object.fromEntries or ((kvs) => merge ...kvs.map ([k, v]) => [k]: v)
 exports.dict = (x) => _dict x or []
 exports.isArray = isArray = Array.isArray
 exports.isDict = isDict = (x) => (type x) is Object
-exports.isFn = (x) => (type x) is Function
+exports.isFn = (x) => (typeof x) is 'function'
 exports.merge = merge = (...os) => Object.assign {}, ...os
 exports.assoc = assoc = (o, k, v) =>
   o = if isArray(o) and Number.isInteger(k) and k >= 0 then o[..] else {o...}
