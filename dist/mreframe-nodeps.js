@@ -969,7 +969,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
   };
 
   exports.isFn = (x) => {
-    return (type(x)) === Function;
+    return (typeof x) === 'function';
   };
 
   exports.merge = merge = (...os) => {
