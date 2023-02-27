@@ -175,7 +175,7 @@ Returns RAtom containing state of a Reagent component.
 ```js
 var rComponent = r.createClass({
   getInitialState: () => ({answer: 42}),
-  reagentRender: self => ['div', "Answer: ", deref( r.stateAtom(self) ).answer],
+  reagentRender: () => ['div', "Answer: ", deref(r.stateAtom( r.currentComponent() )).answer],
 })
 ```
 
@@ -184,7 +184,7 @@ Returns state of a Reagent component (same as `deref( r.stateAtom(vnode) )`).
 ```js
 var rComponent = r.createClass({
   getInitialState: () => ({answer: 42}),
-  reagentRender: self => ['div', "Answer: ", r.state(self).answer],
+  reagentRender: () => ['div', "Answer: ", r.state( r.currentComponent() ).answer],
 })
 ```
 
@@ -193,12 +193,12 @@ Replaces state of a Reagent component (same as `reset(r.stateAtom(vnode), newSta
 ```js
 var rComponent = r.createClass({
   getInitialState: () => ({answer: 42}),
-  reagentRender: self => {
-    let x = r.state(self).answer;
+  reagentRender () {
+    let x = r.state(this).answer;
     return ['div',
              "Answer: ", x, " ",
-             ['button', {onclick: () => r.replaceState(self, {answer: x+1})}, "+1"]],
-  }
+             ['button', {onclick: () => r.replaceState(this, {answer: x+1})}, "+1"]],
+  },
 })
 ```
 ### [`setState (vnode, newState)`](http://reagent-project.github.io/docs/master/reagent.core.html#var-set-state)
@@ -206,11 +206,11 @@ Partially updates state of a Reagent component (same as `swap(r.stateAtom(vnode)
 ```js
 var rComponent = r.createClass({
   getInitialState: () => ({answer: 42, foo: 1}),
-  reagentRender: self => {
-    let x = r.state(self);
+  reagentRender () {
+    let x = r.state(this);
     return ['div',
              "Answer: ", x.answer, " (", x.foo, ") ",
-             ['button', {onclick: () => r.setState(self, {answer: x+1})}, "+1"]],
-  }
+             ['button', {onclick: () => r.setState(this, {answer: x+1})}, "+1"]],
+  },
 })
 ```
