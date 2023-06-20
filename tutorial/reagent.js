@@ -14,6 +14,7 @@ const NBSP = "\u202F";
 const REP = "https://github.com/LeXofLeviafan/mreframe/blob/main";
 const MODES = {
   html:   "HTML",
+  jsx:    "JSX",
   js:     "JS",
   coffee: "Coffee",
   wisp:   "Wisp",

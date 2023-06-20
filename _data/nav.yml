@@ -54,6 +54,9 @@
     - name: Rendering HTML from Reagent components using mithril-node-render [source]
       hint: (scripted in CoffeeScript)
       url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/node-render.coffee"
+    - name: JSX usage example
+      hint: mostly the same as Reagent components + interop, but showing off usage issues
+      url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/examples/reagent.jsx"
     - name: tutorials [source]
       hint: source code of the Reagent / re-frame tutorials
       url:  "https://github.com/LeXofLeviafan/mreframe/blob/pages/tutorial/"
@@ -76,6 +79,9 @@
     - name: mreframe/re-frame
       hint: events / state management submodule
       url:  "/docs/re-frame.html"
+    - name: mreframe/jsx-runtime
+      hint: JSX implementation module (for @babel/plugin-transform-react-jsx)
+      url:  "/docs/jsx-runtime.html"
 
 - name: Perftests
   hint: rendering performance (logged in browser console)

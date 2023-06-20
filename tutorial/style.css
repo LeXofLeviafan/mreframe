@@ -23,7 +23,7 @@ ul.nav > li.separator {flex-grow: 1}
 ul.nav > li > a {
   text-decoration: none;
   text-transform: uppercase;
-  letter-spacing: 4px;
+  letter-spacing: 2px;
   font-size: 11px;
   color: #777777;
   padding: 2em 20px;

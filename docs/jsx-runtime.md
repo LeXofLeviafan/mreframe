@@ -56,6 +56,6 @@ JSX is not particularly compatible with Reagent-style components; you're likely 
 * attributes can be used, but they're _not_ included in the component arguments; they're passed as `meta`/`attrs`
   (i.e. `r.props( r.currentComponent() )`)
 
-* native (Mithril) components must be [adapted](reagent.md#adaptComponent-c) before you can use them
+* native (Mithril) components must be [adapted](reagent.md#adaptcomponent-c) before you can use them
 
 * attributes named `children` or `argv` are unsupported

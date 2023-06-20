@@ -49,6 +49,23 @@ return simpleComponent;`
         "    ", ['span.paren.level2', "["], ['span.keyword', "'p.someclass'"], ",\n",
         "      ", ['span.string', "\"I have \""], ", ", ['span.paren.level3', "["], ['span.keyword', "'strong'"], ", ", ['span.string', "\"bold\""], ['span.paren.level3', "]"], ",\n",
         "      ", ['span.paren.level3', "["], ['span.keyword', "'span'"], ", ", ['span.paren.level1', "{"], ['span.keyword', "style"], ['span.reserved', ":"], " ", ['span.paren.level2', "{"], ['span.keyword', "color"], ['span.reserved', ":"], " ", ['span.keyword', "'red'"], ['span.paren.level2', "}"], ['span.paren.level1', "}"], ", ", ['span.string', "\" and red \""], ['span.paren.level3', "]"], ", ", ['span.string', "\"text.\""], ['span.paren.level2', "]"], ['span.paren.level1', "]"], ";"],
+    jsx: (
+`let SimpleComponent = () => (
+  <div>
+    <p>I am a component!</p>
+    <p class="someclass">
+      I have <strong>bold</strong>
+      <span style={{color: 'red'}}> and red </span>
+      text.
+    </p>
+  </div>
+);`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "let"], " ", ['span.declaration', "SimpleComponent"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "I am a component!"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], ['span.keyword', "p"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"someclass\""], ['span.reserved', ">"], ['span.string', "\n      I have "], ['span.reserved', "<"], ['span.keyword', "strong"], ['span.reserved', ">"], ['span.string', "bold"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "strong"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "span"], " ", ['span.keyword', "style"], ['span.reserved', "="], ['span.paren.level2', "{"], ['span.paren.level3', "{"], ['span.keyword', "color"], ['span.reserved', ":"], " ", ['span.keyword', "'red'"], ['span.paren.level3', "}"], ['span.paren.level2', "}"], ['span.reserved', ">"], ['span.string', " and red "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "span"], ['span.reserved', ">"], ['span.string', "\n      text.\n    "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "\n  "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";"],
     coffee: (
 `simpleComponent = ->
   ['div'
@@ -129,6 +146,19 @@ return simpleParent;`
         "  ", ['span.paren.level1', "["], ['span.keyword', "'div'"], ",\n",
         "    ", ['span.paren.level2', "["], ['span.keyword', "'p'"], ", ", ['span.string', "\"I include simpleComponent.\""], ['span.paren.level2', "]"], ",\n",
         "    ", ['span.paren.level2', "["], "simpleComponent", ['span.paren.level2', "]"], ['span.paren.level1', "]"], ";"],
+    jsx: (
+`let SimpleParent = () => (
+  <div>
+    <p>I include simpleComponent.</p>
+    <SimpleComponent/>
+  </div>
+);`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "let"], " ", ['span.declaration', "SimpleParent"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "I include simpleComponent."], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], "SimpleComponent", ['span.reserved', "/"], ['span.reserved', ">"], ['span.string', "\n  "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";"],
     coffee: (
 `simpleParent = ->
   ['div'
@@ -184,6 +214,24 @@ let sayHello = () =>
         "\n",
         ['span.reserved', "let"], " ", ['span.declaration', "sayHello"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], "\n",
         "  ", ['span.paren.level1', "["], "helloComponent, ", ['span.string', "\"world\""], ['span.paren.level1', "]"], ";"],
+    jsx: (
+`let HelloComponent = (name) => (
+  <p>Hello, {name}!</p>
+);
+
+let SayHello = () => (
+  <HelloComponent>world</HelloComponent>
+);`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "let"], " ", ['span.declaration', "HelloComponent"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], "name", ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "Hello, "], ['span.paren.level2', "{"], "name", ['span.paren.level2', "}"], ['span.string', "!"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "p"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "SayHello"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], "HelloComponent", ['span.reserved', ">"], ['span.string', "world"], ['span.reserved', "<"], ['span.reserved', "/"], "HelloComponent", ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";"],
     coffee: (
 `helloComponent = (name) ->
   ['p', "Hello, ", name, "!"]
@@ -280,6 +328,37 @@ let listerUser = () =>
         "  ", ['span.paren.level1', "["], ['span.keyword', "'div'"], ",\n",
         "    ", ['span.string', "\"Here is a list:\""], ",\n",
         "    ", ['span.paren.level2', "["], "lister, ", ['span.reserved', "range"], ['span.paren.level3', "("], "3", ['span.paren.level3', ")"], ['span.paren.level2', "]"], ['span.paren.level1', "]"], ";"],
+    jsx: (
+`import r from 'mreframe/reagent';
+import { range } from 'lodash';
+
+let Lister = (items) => (
+  <ul>
+    {items.map(item =>
+      <li key={item}>Item {item}</li>)}
+  </ul>
+)
+
+let ListerUser = () => (
+  <div>
+    Here is a list:
+    <Lister>{[range(3)]}</Lister>
+  </div>
+);`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "import"], " r ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/reagent'"], ";\n",
+        ['span.reserved', "import"], " ", ['span.paren.level1', "{"], " range ", ['span.paren.level1', "}"], " ", ['span.reserved', "from"], " ", ['span.keyword', "'lodash'"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "Lister"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], "items", ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "ul"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.paren.level2', "{"], "items.map", ['span.paren.level3', "("], "item ", ['span.reserved', "=>"], "\n",
+        "      ", ['span.reserved', "<"], ['span.keyword', "li"], " ", ['span.keyword', "key"], ['span.reserved', "="], ['span.paren.level1', "{"], "item", ['span.paren.level1', "}"], ['span.reserved', ">"], ['span.string', "Item "], ['span.paren.level1', "{"], "item", ['span.paren.level1', "}"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "li"], ['span.reserved', ">"], ['span.paren.level3', ")"], ['span.paren.level2', "}"], ['span.string', "\n  "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "ul"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], "\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "ListerUser"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n    Here is a list:\n    "], ['span.reserved', "<"], "Lister", ['span.reserved', ">"], ['span.paren.level2', "{"], ['span.paren.level3', "["], ['span.reserved', "range"], ['span.paren.level1', "("], "3", ['span.paren.level1', ")"], ['span.paren.level3', "]"], ['span.paren.level2', "}"], ['span.reserved', "<"], ['span.reserved', "/"], "Lister", ['span.reserved', ">"], ['span.string', "\n  "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";"],
     coffee: (
 `r = require 'reagent/mithril'
 {range} = require 'lodash'
@@ -392,6 +471,34 @@ let countingComponent = () =>
         "    ", ['span.reserved', "deref"], ['span.paren.level2', "("], "clickCount", ['span.paren.level2', ")"], ", ", ['span.string', "\". \""], ",\n",
         "    ", ['span.paren.level2', "["], ['span.keyword', "'input'"], ", ", ['span.paren.level3', "{"], ['span.keyword', "type"], ['span.reserved', ":"], " ", ['span.keyword', "'button'"], ",  ", ['span.keyword', "value"], ['span.reserved', ":"], " ", ['span.string', "\"Click me!\""], ",\n",
         "               ", ['span.keyword', "onclick"], ['span.reserved', ":"], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "swap"], ['span.paren.level1', "("], "clickCount, n ", ['span.reserved', "=>"], " n ", ['span.reserved', "+"], " 1", ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.paren.level2', "]"], ['span.paren.level1', "]"], ";"],
+    jsx: (
+`import r from 'mreframe/reagent';
+import { deref, swap } from 'mreframe/atom';
+
+var clickCount = r.atom(0);
+
+let CountingComponent = () => (
+  <div>
+    The atom <code>clickCount</code> has value:
+    {" "}{deref(clickCount)}{". "}
+    <input type="button" value="Click me!"
+           onclick={() => swap(clickCount, n => n + 1)}/>
+  </div>
+);`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "import"], " r ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/reagent'"], ";\n",
+        ['span.reserved', "import"], " ", ['span.paren.level1', "{"], " deref, swap ", ['span.paren.level1', "}"], " ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/atom'"], ";\n",
+        "\n",
+        ['span.reserved', "var"], " ", ['span.declaration', "clickCount"], " ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level1', "("], "0", ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "CountingComponent"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n    The atom "], ['span.reserved', "<"], ['span.keyword', "code"], ['span.reserved', ">"], ['span.string', "clickCount"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "code"], ['span.reserved', ">"], ['span.string', " has value:\n    "], ['span.paren.level2', "{"], ['span.string', "\" \""], ['span.paren.level2', "}"], ['span.paren.level2', "{"], ['span.reserved', "deref"], ['span.paren.level3', "("], "clickCount", ['span.paren.level3', ")"], ['span.paren.level2', "}"], ['span.paren.level2', "{"], ['span.string', "\". \""], ['span.paren.level2', "}"], "\n",
+        "    ", ['span.reserved', "<"], ['span.keyword', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"button\""], " ", ['span.keyword', "value"], ['span.reserved', "="], ['span.string', "\"Click me!\""], "\n",
+        "           ", ['span.keyword', "onclick"], ['span.reserved', "="], ['span.paren.level2', "{"], ['span.paren.level3', "("], ['span.paren.level3', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "swap"], ['span.paren.level3', "("], "clickCount, n ", ['span.reserved', "=>"], " n ", ['span.reserved', "+"], " 1", ['span.paren.level3', ")"], ['span.paren.level2', "}"], ['span.reserved', "/"], ['span.reserved', ">"], "\n",
+        "  ", ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";"],
     coffee: (
 `{reagent: r, atom: {deref, swap}} = require 'mreframe'
 
@@ -493,6 +600,30 @@ let timerComponent = () => {
         "  ", ['span.reserved', "return"], " ", ['span.paren.level2', "("], ['span.paren.level2', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level2', "{"], "\n",
         "    ", ['span.reserved', "setTimeout"], ['span.paren.level3', "("], ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "swap"], ['span.paren.level1', "("], "secondsElapsed, n ", ['span.reserved', "=>"], " n ", ['span.reserved', "+"], " 1", ['span.paren.level1', ")"], ", 1000", ['span.paren.level3', ")"], ";\n",
         "    ", ['span.reserved', "return"], " ", ['span.paren.level3', "["], ['span.keyword', "'div'"], ", ", ['span.string', "\"Seconds Elapsed: \""], ", ", ['span.reserved', "deref"], ['span.paren.level1', "("], "secondsElapsed", ['span.paren.level1', ")"], ['span.paren.level3', "]"], ";\n",
+        "  ", ['span.paren.level2', "}"], ";\n",
+        ['span.paren.level1', "}"], ";"],
+    jsx: (
+`import r from 'mreframe/reagent';
+import { deref, swap } from 'mreframe/atom';
+
+let TimerComponent = () => {
+  let secondsElapsed = r.atom(0);
+  return () => {
+    setTimeout(() => swap(secondsElapsed, n => n + 1), 1000);
+    return <div>Seconds Elapsed: {deref(secondsElapsed)}</div>;
+  };
+};`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "import"], " r ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/reagent'"], ";\n",
+        ['span.reserved', "import"], " ", ['span.paren.level1', "{"], " deref, swap ", ['span.paren.level1', "}"], " ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/atom'"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "TimerComponent"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "{"], "\n",
+        "  ", ['span.reserved', "let"], " secondsElapsed ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level2', "("], "0", ['span.paren.level2', ")"], ";\n",
+        "  ", ['span.reserved', "return"], " ", ['span.paren.level2', "("], ['span.paren.level2', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level2', "{"], "\n",
+        "    ", ['span.reserved', "setTimeout"], ['span.paren.level3', "("], ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "swap"], ['span.paren.level1', "("], "secondsElapsed, n ", ['span.reserved', "=>"], " n ", ['span.reserved', "+"], " 1", ['span.paren.level1', ")"], ", 1000", ['span.paren.level3', ")"], ";\n",
+        "    ", ['span.reserved', "return"], " ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "Seconds Elapsed: "], ['span.paren.level3', "{"], ['span.reserved', "deref"], ['span.paren.level1', "("], "secondsElapsed", ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], ";\n",
         "  ", ['span.paren.level2', "}"], ";\n",
         ['span.paren.level1', "}"], ";"],
     coffee: (
@@ -600,6 +731,41 @@ let sharedState = () => {
         "      ", ['span.paren.level3', "["], ['span.keyword', "'p'"], ", ", ['span.string', "\"The value is now: \""], ", ", ['span.reserved', "deref"], ['span.paren.level1', "("], "val", ['span.paren.level1', ")"], ['span.paren.level3', "]"], ",\n",
         "      ", ['span.paren.level3', "["], ['span.keyword', "'p'"], ", ", ['span.string', "\"Change it here: \""], ", ", ['span.paren.level1', "["], "atomInput, val", ['span.paren.level1', "]"], ['span.paren.level3', "]"], ['span.paren.level2', "]"], ";\n",
         ['span.paren.level1', "}"], ";"],
+    jsx: (
+`import r from 'mreframe/reagent';
+import { deref, reset } from 'mreframe/atom';
+
+let AtomInput = (value) => (
+  <input type="text" value={deref(value)}
+         oninput={evt => reset(value, evt.target.value)}/>
+);
+
+let SharedState = () => {
+  let val = r.atom("foo");
+  return () => (
+    <div>
+      <p>The value is now: {deref(val)}</p>
+      <p>Change it here: <AtomInput>{val}</AtomInput></p>
+    </div>
+  );
+};`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "import"], " r ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/reagent'"], ";\n",
+        ['span.reserved', "import"], " ", ['span.paren.level1', "{"], " deref, reset ", ['span.paren.level1', "}"], " ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/atom'"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "AtomInput"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], "value", ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"text\""], " ", ['span.keyword', "value"], ['span.reserved', "="], ['span.paren.level2', "{"], ['span.reserved', "deref"], ['span.paren.level3', "("], "value", ['span.paren.level3', ")"], ['span.paren.level2', "}"], "\n",
+        "         ", ['span.keyword', "oninput"], ['span.reserved', "="], ['span.paren.level2', "{"], "evt ", ['span.reserved', "=>"], " ", ['span.reserved', "reset"], ['span.paren.level3', "("], "value, evt.target.value", ['span.paren.level3', ")"], ['span.paren.level2', "}"], ['span.reserved', "/"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "SharedState"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "{"], "\n",
+        "  ", ['span.reserved', "let"], " val ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level2', "("], ['span.string', "\"foo\""], ['span.paren.level2', ")"], ";\n",
+        "  ", ['span.reserved', "return"], " ", ['span.paren.level2', "("], ['span.paren.level2', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level2', "("], "\n",
+        "    ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "The value is now: "], ['span.paren.level3', "{"], ['span.reserved', "deref"], ['span.paren.level1', "("], "val", ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "Change it here: "], ['span.reserved', "<"], "AtomInput", ['span.reserved', ">"], ['span.paren.level3', "{"], "val", ['span.paren.level3', "}"], ['span.reserved', "<"], ['span.reserved', "/"], "AtomInput", ['span.reserved', ">"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        "  ", ['span.paren.level2', ")"], ";\n",
+        ['span.paren.level1', "}"], ";"],
     coffee: (
 `{reagent: r, atom: {deref, reset}} = require 'mreframe'
 
@@ -703,6 +869,31 @@ r.render([simpleComponent], document.body);`
         "      ", ['span.paren.level3', "["], ['span.keyword', "'span'"], ", ", ['span.paren.level1', "{"], ['span.keyword', "style"], ['span.reserved', ":"], " ", ['span.paren.level2', "{"], ['span.keyword', "color"], ['span.reserved', ":"], " ", ['span.keyword', "'red'"], ['span.paren.level2', "}"], ['span.paren.level1', "}"], ", ", ['span.string', "\" and red \""], ['span.paren.level3', "]"], ", ", ['span.string', "\"text.\""], ['span.paren.level2', "]"], ['span.paren.level1', "]"], ";\n",
         "\n",
         ['span.reserved', "r.render"], ['span.paren.level1', "("], ['span.paren.level2', "["], "simpleComponent", ['span.paren.level2', "]"], ", ", ['span.reserved', "document.body"], ['span.paren.level1', ")"], ";"],
+    jsx: (
+`import r from 'mreframe/reagent';
+
+let SimpleComponent = () => (
+  <div>
+    <p>I am a component!</p>
+    <p class="someclass">
+      I have <strong>bold</strong>
+      <span style={{color: 'red'}}> and red </span>
+      text.
+    </p>
+  </div>
+);
+
+r.render(<SimpleComponent/>, document.body);`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "import"], " r ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/reagent'"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "SimpleComponent"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "I am a component!"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], ['span.keyword', "p"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"someclass\""], ['span.reserved', ">"], ['span.string', "\n      I have "], ['span.reserved', "<"], ['span.keyword', "strong"], ['span.reserved', ">"], ['span.string', "bold"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "strong"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "span"], " ", ['span.keyword', "style"], ['span.reserved', "="], ['span.paren.level2', "{"], ['span.paren.level3', "{"], ['span.keyword', "color"], ['span.reserved', ":"], " ", ['span.keyword', "'red'"], ['span.paren.level3', "}"], ['span.paren.level2', "}"], ['span.reserved', ">"], ['span.string', " and red "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "span"], ['span.reserved', ">"], ['span.string', "\n      text.\n    "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "\n  "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "r.render"], ['span.paren.level1', "("], ['span.reserved', "<"], "SimpleComponent", ['span.reserved', "/"], ['span.reserved', ">"], ", ", ['span.reserved', "document.body"], ['span.paren.level1', ")"], ";"],
     coffee: (
 `r = require 'mreframe/reagent'
 
@@ -924,6 +1115,93 @@ let bmiComponent = () => {
         "             ", ['span.string', "\"BMI: \""], ", ", ['span.reserved', "Math.floor"], ['span.paren.level1', "("], "bmi", ['span.paren.level1', ")"], ", ", ['span.string', "\" \""], ",\n",
         "             ", ['span.paren.level1', "["], ['span.keyword', "'span'"], ", ", ['span.paren.level2', "{"], ['span.keyword', "style"], ['span.reserved', ":"], " ", ['span.paren.level3', "{"], "color", ['span.paren.level3', "}"], ['span.paren.level2', "}"], ", diagnose", ['span.paren.level1', "]"], ",\n",
         "             ", ['span.paren.level1', "["], "slider, ", ['span.keyword', "'bmi'"], ", bmi, 10, 50, ", ['span.keyword', "'weight'"], ['span.paren.level1', "]"], ['span.paren.level3', "]"], ['span.paren.level2', "]"], ";\n",
+        ['span.paren.level1', "}"], ";"],
+    jsx: (
+`import r from 'mreframe/reagent';
+import { deref, swap } from 'mreframe/atom';
+import { merge, assoc, dissoc, chain } from 'mreframe/util';
+
+let calcBmi = data => {
+  let {height, weight, bmi} = data;
+  let h = height / 100;
+  return merge(data, (bmi ? {weight: bmi * h * h} : {bmi: weight / (h * h)}));
+};
+
+var bmiData = r.atom( calcBmi({height: 180, weight: 80}) );
+
+let Slider = (param, value, min, max, invalidates) => (
+  <input type="range" min={min} max={max} value={value /* order matters :-( */}
+         style={{width: "100%"}}
+         oninput={e => {
+           let newValue = parseInt(e.target.value);
+           swap(bmiData, data => chain(data,
+                                       [assoc, param, newValue],
+                                       [dissoc, invalidates],
+                                       calcBmi));
+         }}/>
+);
+
+let BmiComponent = () => {
+  let {weight, height, bmi} = deref(bmiData);
+  let [color, diagnose] = (bmi < 18.5 ? ['orange', "underweight"] :
+                           bmi < 25   ? ['inherit', "normal"]     :
+                           bmi < 30   ? ['orange', "overweight"]  :
+                           ['red', "obese"]);
+  return (
+    <div>
+      <h3>BMI calculator</h3>
+      <div>
+        Height: {Math.floor(height)}cm
+        <Slider>{['height', height, 100, 220, 'bmi']}</Slider>
+      </div>
+      <div>
+        Weight: {Math.floor(weight)}kg
+        <Slider>{['weight', weight, 30, 150, 'bmi']}</Slider>
+      </div>
+      <div>
+        BMI: {Math.floor(bmi)}{" "}
+        <span style={{color}}>{diagnose}</span>
+        <Slider>{['bmi', bmi, 10, 50, 'weight']}</Slider>
+      </div>
+    </div>
+  );
+};`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "import"], " r ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/reagent'"], ";\n",
+        ['span.reserved', "import"], " ", ['span.paren.level1', "{"], " deref, swap ", ['span.paren.level1', "}"], " ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/atom'"], ";\n",
+        ['span.reserved', "import"], " ", ['span.paren.level1', "{"], " merge, assoc, dissoc, chain ", ['span.paren.level1', "}"], " ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/util'"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "calcBmi"], " ", ['span.reserved', "="], " data ", ['span.reserved', "=>"], " ", ['span.paren.level1', "{"], "\n",
+        "  ", ['span.reserved', "let"], " ", ['span.paren.level2', "{"], "height, weight, bmi", ['span.paren.level2', "}"], " ", ['span.reserved', "="], " data;\n",
+        "  ", ['span.reserved', "let"], " h ", ['span.reserved', "="], " height ", ['span.reserved', "/"], " 100;\n",
+        "  ", ['span.reserved', "return"], " ", ['span.reserved', "merge"], ['span.paren.level2', "("], "data, ", ['span.paren.level3', "("], "bmi ", ['span.reserved', "?"], " ", ['span.paren.level1', "{"], ['span.keyword', "weight"], ['span.reserved', ":"], " bmi ", ['span.reserved', "*"], " h ", ['span.reserved', "*"], " h", ['span.paren.level1', "}"], " ", ['span.reserved', ":"], " ", ['span.paren.level1', "{"], ['span.keyword', "bmi"], ['span.reserved', ":"], " weight ", ['span.reserved', "/"], " ", ['span.paren.level2', "("], "h ", ['span.reserved', "*"], " h", ['span.paren.level2', ")"], ['span.paren.level1', "}"], ['span.paren.level3', ")"], ['span.paren.level2', ")"], ";\n",
+        ['span.paren.level1', "}"], ";\n",
+        "\n",
+        ['span.reserved', "var"], " ", ['span.declaration', "bmiData"], " ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level1', "("], " calcBmi", ['span.paren.level2', "("], ['span.paren.level3', "{"], ['span.keyword', "height"], ['span.reserved', ":"], " 180, ", ['span.keyword', "weight"], ['span.reserved', ":"], " 80", ['span.paren.level3', "}"], ['span.paren.level2', ")"], " ", ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "Slider"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], "param, value, min, max, invalidates", ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"range\""], " ", ['span.keyword', "min"], ['span.reserved', "="], ['span.paren.level2', "{"], "min", ['span.paren.level2', "}"], " ", ['span.keyword', "max"], ['span.reserved', "="], ['span.paren.level2', "{"], "max", ['span.paren.level2', "}"], " ", ['span.keyword', "value"], ['span.reserved', "="], ['span.paren.level2', "{"], "value ", ['span.comment', "/* order matters :-( */"], ['span.paren.level2', "}"], "\n",
+        "         ", ['span.keyword', "style"], ['span.reserved', "="], ['span.paren.level2', "{"], ['span.paren.level3', "{"], ['span.keyword', "width"], ['span.reserved', ":"], " ", ['span.string', "\"100%\""], ['span.paren.level3', "}"], ['span.paren.level2', "}"], "\n",
+        "         ", ['span.keyword', "oninput"], ['span.reserved', "="], ['span.paren.level2', "{"], "e ", ['span.reserved', "=>"], " ", ['span.paren.level3', "{"], "\n",
+        "           ", ['span.reserved', "let"], " newValue ", ['span.reserved', "="], " ", ['span.reserved', "parseInt"], ['span.paren.level1', "("], "e.target.value", ['span.paren.level1', ")"], ";\n",
+        "           ", ['span.reserved', "swap"], ['span.paren.level1', "("], "bmiData, data ", ['span.reserved', "=>"], " ", ['span.reserved', "chain"], ['span.paren.level2', "("], "data,\n",
+        "                                       ", ['span.paren.level3', "["], ['span.reserved', "assoc"], ", param, newValue", ['span.paren.level3', "]"], ",\n",
+        "                                       ", ['span.paren.level3', "["], ['span.reserved', "dissoc"], ", invalidates", ['span.paren.level3', "]"], ",\n",
+        "                                       calcBmi", ['span.paren.level2', ")"], ['span.paren.level1', ")"], ";\n",
+        "         ", ['span.paren.level3', "}"], ['span.paren.level2', "}"], ['span.reserved', "/"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "BmiComponent"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "{"], "\n",
+        "  ", ['span.reserved', "let"], " ", ['span.paren.level2', "{"], "weight, height, bmi", ['span.paren.level2', "}"], " ", ['span.reserved', "="], " ", ['span.reserved', "deref"], ['span.paren.level2', "("], "bmiData", ['span.paren.level2', ")"], ";\n",
+        "  ", ['span.reserved', "let"], " ", ['span.paren.level2', "["], "color, diagnose", ['span.paren.level2', "]"], " ", ['span.reserved', "="], " ", ['span.paren.level2', "("], "bmi ", ['span.reserved', "<"], " 18.5 ", ['span.reserved', "?"], " ", ['span.paren.level3', "["], ['span.keyword', "'orange'"], ", ", ['span.string', "\"underweight\""], ['span.paren.level3', "]"], " ", ['span.reserved', ":"], "\n",
+        "                           bmi ", ['span.reserved', "<"], " 25   ", ['span.reserved', "?"], " ", ['span.paren.level3', "["], ['span.keyword', "'inherit'"], ", ", ['span.string', "\"normal\""], ['span.paren.level3', "]"], "     ", ['span.reserved', ":"], "\n",
+        "                           bmi ", ['span.reserved', "<"], " 30   ", ['span.reserved', "?"], " ", ['span.paren.level3', "["], ['span.keyword', "'orange'"], ", ", ['span.string', "\"overweight\""], ['span.paren.level3', "]"], "  ", ['span.reserved', ":"], "\n",
+        "                           ", ['span.paren.level3', "["], ['span.keyword', "'red'"], ", ", ['span.string', "\"obese\""], ['span.paren.level3', "]"], ['span.paren.level2', ")"], ";\n",
+        "  ", ['span.reserved', "return"], " ", ['span.paren.level2', "("], "\n",
+        "    ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "h3"], ['span.reserved', ">"], ['span.string', "BMI calculator"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "h3"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n        Height: "], ['span.paren.level3', "{"], ['span.reserved', "Math.floor"], ['span.paren.level1', "("], "height", ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.string', "cm\n        "], ['span.reserved', "<"], "Slider", ['span.reserved', ">"], ['span.paren.level3', "{"], ['span.paren.level1', "["], ['span.keyword', "'height'"], ", height, 100, 220, ", ['span.keyword', "'bmi'"], ['span.paren.level1', "]"], ['span.paren.level3', "}"], ['span.reserved', "<"], ['span.reserved', "/"], "Slider", ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n        Weight: "], ['span.paren.level3', "{"], ['span.reserved', "Math.floor"], ['span.paren.level1', "("], "weight", ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.string', "kg\n        "], ['span.reserved', "<"], "Slider", ['span.reserved', ">"], ['span.paren.level3', "{"], ['span.paren.level1', "["], ['span.keyword', "'weight'"], ", weight, 30, 150, ", ['span.keyword', "'bmi'"], ['span.paren.level1', "]"], ['span.paren.level3', "}"], ['span.reserved', "<"], ['span.reserved', "/"], "Slider", ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n        BMI: "], ['span.paren.level3', "{"], ['span.reserved', "Math.floor"], ['span.paren.level1', "("], "bmi", ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.paren.level3', "{"], ['span.string', "\" \""], ['span.paren.level3', "}"], ['span.string', "\n        "], ['span.reserved', "<"], ['span.keyword', "span"], " ", ['span.keyword', "style"], ['span.reserved', "="], ['span.paren.level3', "{"], ['span.paren.level1', "{"], "color", ['span.paren.level1', "}"], ['span.paren.level3', "}"], ['span.reserved', ">"], ['span.paren.level3', "{"], "diagnose", ['span.paren.level3', "}"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "span"], ['span.reserved', ">"], ['span.string', "\n        "], ['span.reserved', "<"], "Slider", ['span.reserved', ">"], ['span.paren.level3', "{"], ['span.paren.level1', "["], ['span.keyword', "'bmi'"], ", bmi, 10, 50, ", ['span.keyword', "'weight'"], ['span.paren.level1', "]"], ['span.paren.level3', "}"], ['span.reserved', "<"], ['span.reserved', "/"], "Slider", ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        "  ", ['span.paren.level2', ")"], ";\n",
         ['span.paren.level1', "}"], ";"],
     coffee: (
 `r = require 'mreframe/reagent'
@@ -1219,6 +1497,83 @@ r.render([simpleExample], document.getElementById('app'));`
         ['span.reserved', "setInterval"], ['span.paren.level1', "("], ['span.paren.level2', "("], ['span.paren.level2', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "reset"], ['span.paren.level2', "("], "timer, ", ['span.reserved', "new"], " ", ['span.reserved', "Date"], ['span.paren.level2', ")"], ", 1000", ['span.paren.level1', ")"], ";  ", ['span.comment', "// timeUpdater"], "\n",
         "\n",
         ['span.reserved', "r.render"], ['span.paren.level1', "("], ['span.paren.level2', "["], "simpleExample", ['span.paren.level2', "]"], ", ", ['span.reserved', "document.getElementById"], ['span.paren.level2', "("], ['span.keyword', "'app'"], ['span.paren.level2', ")"], ['span.paren.level1', ")"], ";"],
+    jsx: (
+`import r from 'mreframe/reagent';
+import { deref, reset } from 'mreframe/atom';
+
+var timer = r.atom(new Date);
+var timeColor = r.atom("#f34");
+
+
+let Greeting = (message) => (
+  <h1>{message}</h1>
+);
+
+let Clock = () => {
+  let [timeStr] = deref(timer).toTimeString().split(" ");
+  return (
+    <div class="example-clock" style={{color: deref(timeColor)}}>
+      {timeStr}
+    </div>
+  );
+};
+
+let ColorInput = () => (
+  <div class="color-input">
+    {"Time color: "}
+    <input type="text" value={deref(timeColor)}
+           oninput={e => reset(timeColor, e.target.value)}/>
+  </div>
+);
+
+let SimpleExample = () => (
+  <div>
+    <Greeting>Hello world, it is now</Greeting>
+    <Clock/>
+    <ColorInput/>
+  </div>
+);
+
+
+setInterval(() => reset(timer, new Date), 1000);  // timeUpdater
+
+r.render(<SimpleExample/>, document.getElementById('app'));`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "import"], " r ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/reagent'"], ";\n",
+        ['span.reserved', "import"], " ", ['span.paren.level1', "{"], " deref, reset ", ['span.paren.level1', "}"], " ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/atom'"], ";\n",
+        "\n",
+        ['span.reserved', "var"], " ", ['span.declaration', "timer"], " ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level1', "("], ['span.reserved', "new"], " ", ['span.reserved', "Date"], ['span.paren.level1', ")"], ";\n",
+        ['span.reserved', "var"], " ", ['span.declaration', "timeColor"], " ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level1', "("], ['span.string', "\"#f34\""], ['span.paren.level1', ")"], ";\n",
+        "\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "Greeting"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], "message", ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "h1"], ['span.reserved', ">"], ['span.paren.level2', "{"], "message", ['span.paren.level2', "}"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "h1"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "Clock"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "{"], "\n",
+        "  ", ['span.reserved', "let"], " ", ['span.paren.level2', "["], "timeStr", ['span.paren.level2', "]"], " ", ['span.reserved', "="], " ", ['span.reserved', "deref"], ['span.paren.level2', "("], "timer", ['span.paren.level2', ")"], ".toTimeString", ['span.paren.level2', "("], ['span.paren.level2', ")"], ".split", ['span.paren.level2', "("], ['span.string', "\" \""], ['span.paren.level2', ")"], ";\n",
+        "  ", ['span.reserved', "return"], " ", ['span.paren.level2', "("], "\n",
+        "    ", ['span.reserved', "<"], ['span.keyword', "div"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"example-clock\""], " ", ['span.keyword', "style"], ['span.reserved', "="], ['span.paren.level3', "{"], ['span.paren.level1', "{"], ['span.keyword', "color"], ['span.reserved', ":"], " ", ['span.reserved', "deref"], ['span.paren.level2', "("], "timeColor", ['span.paren.level2', ")"], ['span.paren.level1', "}"], ['span.paren.level3', "}"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.paren.level3', "{"], "timeStr", ['span.paren.level3', "}"], ['span.string', "\n    "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        "  ", ['span.paren.level2', ")"], ";\n",
+        ['span.paren.level1', "}"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "ColorInput"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "div"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"color-input\""], ['span.reserved', ">"], ['span.string', "\n    "], ['span.paren.level2', "{"], ['span.string', "\"Time color: \""], ['span.paren.level2', "}"], "\n",
+        "    ", ['span.reserved', "<"], ['span.keyword', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"text\""], " ", ['span.keyword', "value"], ['span.reserved', "="], ['span.paren.level2', "{"], ['span.reserved', "deref"], ['span.paren.level3', "("], "timeColor", ['span.paren.level3', ")"], ['span.paren.level2', "}"], "\n",
+        "           ", ['span.keyword', "oninput"], ['span.reserved', "="], ['span.paren.level2', "{"], "e ", ['span.reserved', "=>"], " ", ['span.reserved', "reset"], ['span.paren.level3', "("], "timeColor, e.target.value", ['span.paren.level3', ")"], ['span.paren.level2', "}"], ['span.reserved', "/"], ['span.reserved', ">"], "\n",
+        "  ", ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "SimpleExample"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "\n",
+        "  ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], "Greeting", ['span.reserved', ">"], ['span.string', "Hello world, it is now"], ['span.reserved', "<"], ['span.reserved', "/"], "Greeting", ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], "Clock", ['span.reserved', "/"], ['span.reserved', ">"], ['span.string', "\n    "], ['span.reserved', "<"], "ColorInput", ['span.reserved', "/"], ['span.reserved', ">"], ['span.string', "\n  "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        ['span.paren.level1', ")"], ";\n",
+        "\n",
+        "\n",
+        ['span.reserved', "setInterval"], ['span.paren.level1', "("], ['span.paren.level2', "("], ['span.paren.level2', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "reset"], ['span.paren.level2', "("], "timer, ", ['span.reserved', "new"], " ", ['span.reserved', "Date"], ['span.paren.level2', ")"], ", 1000", ['span.paren.level1', ")"], ";  ", ['span.comment', "// timeUpdater"], "\n",
+        "\n",
+        ['span.reserved', "r.render"], ['span.paren.level1', "("], ['span.reserved', "<"], "SimpleExample", ['span.reserved', "/"], ['span.reserved', ">"], ", ", ['span.reserved', "document.getElementById"], ['span.paren.level2', "("], ['span.keyword', "'app'"], ['span.paren.level2', ")"], ['span.paren.level1', ")"], ";"],
     coffee: (
 `{reagent: r, atom: {deref, reset}} = require 'mreframe'
 
@@ -1821,6 +2176,252 @@ r.render([todoApp], document.getElementById('app'));`
         "completeAll", ['span.paren.level1', "("], ['span.reserved', "true"], ['span.paren.level1', ")"], ";\n",
         "\n",
         ['span.reserved', "r.render"], ['span.paren.level1', "("], ['span.paren.level2', "["], "todoApp", ['span.paren.level2', "]"], ", ", ['span.reserved', "document.getElementById"], ['span.paren.level2', "("], ['span.keyword', "'app'"], ['span.paren.level2', ")"], ['span.paren.level1', ")"], ";"],
+    jsx: (
+`import r from 'mreframe/reagent';
+import { deref, reset, swap } from 'mreframe/atom';
+import { identity, dict, entries, vals, getIn,
+         assoc, assocIn, dissoc, updateIn } from 'mreframe/util';
+import { map, filter } from 'lodash';
+
+var todos   = r.atom({});
+var counter = r.atom(0);
+
+let addTodo = (text) => {
+  let id = swap(counter, n => n + 1);
+  swap(todos, assoc, id, {id,  title: text,  done: false});
+};
+
+let toggle = (id) => swap(todos, updateIn, [id, 'done'], it => !it);
+let save   = (id, title) => swap(todos, assocIn, [id, 'title'], title);
+let remove = (id) => swap(todos, dissoc, id);
+
+let mmap        = (o, f, arg) => dict( f(entries(o), arg) );
+let completeAll = v  => swap(todos, mmap, map,    it => assocIn(it, [1, 'done'], v));
+let clearDone   = () => swap(todos, mmap, filter, it => !getIn(it, [1, 'done']));
+
+
+let TodoInput = ({title, onsave, onstop}) => {
+  let val = r.atom(title || "");
+  let stop = () => {reset(val, "");   onstop && onstop()};
+  let save = () => {let v = deref(val).trim();
+                    v && onsave(v);
+                    stop()};
+  return ({id, className, placeholder}) => (
+    <input type="text" value={deref(val)}
+           id={id} className={className} placeholder={placeholder}
+           onblur={save}
+           oninput={e => reset(val, e.target.value)}
+           onkeydown={e => (e.which === 13 ? save() :
+                            e.which === 26 ? stop() :
+                            null)}/>
+  );
+};
+
+let TodoEdit = r.createClass({  // not quite equivalent to the original code
+  componentDidMount: ({dom}) => dom.focus(),
+  reagentRender:     params => <TodoInput>{params}</TodoInput>,
+});
+
+let TodoStats = ({filt, active, done}) => {
+  let attrsFor = name => ({class: [(name == deref(filt)) && 'selected'],
+                           onclick: () => reset(filt, name)});
+  return (
+    <div>
+      <span id="todo-count">
+        <strong>{active}</strong> {active == 1 ? "item" : "items"} left
+      </span>
+      <ul id="filters">
+        <li><a {...attrsFor('all')}>All</a></li>
+        <li><a {...attrsFor('active')}>Active</a></li>
+        <li><a {...attrsFor('done')}>Completed</a></li>
+      </ul>
+      {(done > 0) &&
+         <button id="clear-completed" onclick={clearDone}>
+           Clear completed {done}
+         </button>}
+    </div>
+  );
+};
+
+let TodoItem = () => {
+  let editing = r.atom(false);
+  return ({id, done, title}) => (
+    <li class={{completed: done, editing: deref(editing)}}>
+      <div class="view">
+        <input class="toggle" type="checkbox" checked={done}
+               onchange={() => toggle(id)}/>
+        <label ondblclick={() => reset(editing, true)}>{title}</label>
+        <button class="destroy" onclick={() => remove(id)}/>
+      </div>
+      {deref(editing) &&
+         <TodoEdit>{{
+           className: 'edit',  title,
+           onsave: it => save(id, it),
+           onstop: () => reset(editing, false),
+         }}</TodoEdit>}
+    </li>
+  );
+};
+
+let TodoApp = () => {
+  let filt = r.atom('all');
+  return () => {
+    let items = vals( deref(todos) );
+    let done = items.filter(it => it.done).length;
+    let active = items.length - done;
+    return (
+      <div>
+        <section id="todoapp">
+          <header id="header">
+            <h1>todos</h1>
+            <TodoInput>{{
+              id:          'new-todo',
+              placeholder: "What needs to be done?",
+              onsave:      addTodo,
+            }}</TodoInput>
+          </header>
+          {(items.length > 0) &&
+             <div>
+               <section id="main">
+                 <input id="toggle-all" type="checkbox" checked={active === 0}
+                        onchange={() => completeAll(active > 0)}/>
+                 <label for="toggle-all">Mark all as complete</label>
+                 <ul id="todo-list">
+                   {items.filter(deref(filt) === 'active' ? (it => !it.done) :
+                                 deref(filt) === 'done'   ? (it => it.done)  :
+                                 identity).map(todo =>
+                      <TodoItem key={todo.id}>{todo}</TodoItem>)}
+                 </ul>
+               </section>
+               <footer id="footer">
+                 <TodoStats>{{active, done, filt}}</TodoStats>
+               </footer>
+             </div>}
+        </section>
+        <footer id="info">
+          <p>Double-click to edit a todo</p>
+        </footer>
+      </div>
+    );
+  };
+};
+
+
+// init
+addTodo("Rename Cloact to Reagent");
+addTodo("Add undo demo");
+addTodo("Make all rendering async");
+addTodo("Allow any arguments to component functions");
+completeAll(true);
+
+r.render(<TodoApp/>, document.getElementById('app'));`
+    ),
+    jsx_:
+      ['<>',
+        ['span.reserved', "import"], " r ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/reagent'"], ";\n",
+        ['span.reserved', "import"], " ", ['span.paren.level1', "{"], " deref, reset, swap ", ['span.paren.level1', "}"], " ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/atom'"], ";\n",
+        ['span.reserved', "import"], " ", ['span.paren.level1', "{"], " identity, dict, entries, vals, getIn,\n",
+        "         assoc, assocIn, dissoc, updateIn ", ['span.paren.level1', "}"], " ", ['span.reserved', "from"], " ", ['span.keyword', "'mreframe/util'"], ";\n",
+        ['span.reserved', "import"], " ", ['span.paren.level1', "{"], " map, filter ", ['span.paren.level1', "}"], " ", ['span.reserved', "from"], " ", ['span.keyword', "'lodash'"], ";\n",
+        "\n",
+        ['span.reserved', "var"], " ", ['span.declaration', "todos"], "   ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level1', "("], ['span.paren.level2', "{"], ['span.paren.level2', "}"], ['span.paren.level1', ")"], ";\n",
+        ['span.reserved', "var"], " ", ['span.declaration', "counter"], " ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level1', "("], "0", ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "addTodo"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], "text", ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "{"], "\n",
+        "  ", ['span.reserved', "let"], " id ", ['span.reserved', "="], " ", ['span.reserved', "swap"], ['span.paren.level2', "("], "counter, n ", ['span.reserved', "=>"], " n ", ['span.reserved', "+"], " 1", ['span.paren.level2', ")"], ";\n",
+        "  ", ['span.reserved', "swap"], ['span.paren.level2', "("], "todos, ", ['span.reserved', "assoc"], ", id, ", ['span.paren.level3', "{"], "id,  ", ['span.keyword', "title"], ['span.reserved', ":"], " text,  ", ['span.keyword', "done"], ['span.reserved', ":"], " ", ['span.reserved', "false"], ['span.paren.level3', "}"], ['span.paren.level2', ")"], ";\n",
+        ['span.paren.level1', "}"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "toggle"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], "id", ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "swap"], ['span.paren.level1', "("], "todos, ", ['span.reserved', "updateIn"], ", ", ['span.paren.level2', "["], "id, ", ['span.keyword', "'done'"], ['span.paren.level2', "]"], ", it ", ['span.reserved', "=>"], " ", ['span.reserved', "!"], "it", ['span.paren.level1', ")"], ";\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "save"], "   ", ['span.reserved', "="], " ", ['span.paren.level1', "("], "id, title", ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "swap"], ['span.paren.level1', "("], "todos, ", ['span.reserved', "assocIn"], ", ", ['span.paren.level2', "["], "id, ", ['span.keyword', "'title'"], ['span.paren.level2', "]"], ", title", ['span.paren.level1', ")"], ";\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "remove"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], "id", ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "swap"], ['span.paren.level1', "("], "todos, ", ['span.reserved', "dissoc"], ", id", ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "mmap"], "        ", ['span.reserved', "="], " ", ['span.paren.level1', "("], "o, f, arg", ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "dict"], ['span.paren.level1', "("], " f", ['span.paren.level2', "("], ['span.reserved', "entries"], ['span.paren.level3', "("], "o", ['span.paren.level3', ")"], ", arg", ['span.paren.level2', ")"], " ", ['span.paren.level1', ")"], ";\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "completeAll"], " ", ['span.reserved', "="], " v  ", ['span.reserved', "=>"], " ", ['span.reserved', "swap"], ['span.paren.level1', "("], "todos, mmap, ", ['span.reserved', "map"], ",    it ", ['span.reserved', "=>"], " ", ['span.reserved', "assocIn"], ['span.paren.level2', "("], "it, ", ['span.paren.level3', "["], "1, ", ['span.keyword', "'done'"], ['span.paren.level3', "]"], ", v", ['span.paren.level2', ")"], ['span.paren.level1', ")"], ";\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "clearDone"], "   ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "swap"], ['span.paren.level1', "("], "todos, mmap, ", ['span.reserved', "filter"], ", it ", ['span.reserved', "=>"], " ", ['span.reserved', "!"], ['span.reserved', "getIn"], ['span.paren.level2', "("], "it, ", ['span.paren.level3', "["], "1, ", ['span.keyword', "'done'"], ['span.paren.level3', "]"], ['span.paren.level2', ")"], ['span.paren.level1', ")"], ";\n",
+        "\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "TodoInput"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level2', "{"], "title, onsave, onstop", ['span.paren.level2', "}"], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "{"], "\n",
+        "  ", ['span.reserved', "let"], " val ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level2', "("], "title ", ['span.reserved', "||"], " ", ['span.string', "\"\""], ['span.paren.level2', ")"], ";\n",
+        "  ", ['span.reserved', "let"], " stop ", ['span.reserved', "="], " ", ['span.paren.level2', "("], ['span.paren.level2', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level2', "{"], ['span.reserved', "reset"], ['span.paren.level3', "("], "val, ", ['span.string', "\"\""], ['span.paren.level3', ")"], ";   onstop ", ['span.reserved', "&&"], " onstop", ['span.paren.level3', "("], ['span.paren.level3', ")"], ['span.paren.level2', "}"], ";\n",
+        "  ", ['span.reserved', "let"], " save ", ['span.reserved', "="], " ", ['span.paren.level2', "("], ['span.paren.level2', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level2', "{"], ['span.reserved', "let"], " v ", ['span.reserved', "="], " ", ['span.reserved', "deref"], ['span.paren.level3', "("], "val", ['span.paren.level3', ")"], ".trim", ['span.paren.level3', "("], ['span.paren.level3', ")"], ";\n",
+        "                    v ", ['span.reserved', "&&"], " onsave", ['span.paren.level3', "("], "v", ['span.paren.level3', ")"], ";\n",
+        "                    stop", ['span.paren.level3', "("], ['span.paren.level3', ")"], ['span.paren.level2', "}"], ";\n",
+        "  ", ['span.reserved', "return"], " ", ['span.paren.level2', "("], ['span.paren.level3', "{"], "id, className, placeholder", ['span.paren.level3', "}"], ['span.paren.level2', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level2', "("], "\n",
+        "    ", ['span.reserved', "<"], ['span.keyword', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"text\""], " ", ['span.keyword', "value"], ['span.reserved', "="], ['span.paren.level3', "{"], ['span.reserved', "deref"], ['span.paren.level1', "("], "val", ['span.paren.level1', ")"], ['span.paren.level3', "}"], "\n",
+        "           ", ['span.keyword', "id"], ['span.reserved', "="], ['span.paren.level3', "{"], "id", ['span.paren.level3', "}"], " ", ['span.keyword', "className"], ['span.reserved', "="], ['span.paren.level3', "{"], "className", ['span.paren.level3', "}"], " ", ['span.keyword', "placeholder"], ['span.reserved', "="], ['span.paren.level3', "{"], "placeholder", ['span.paren.level3', "}"], "\n",
+        "           ", ['span.keyword', "onblur"], ['span.reserved', "="], ['span.paren.level3', "{"], "save", ['span.paren.level3', "}"], "\n",
+        "           ", ['span.keyword', "oninput"], ['span.reserved', "="], ['span.paren.level3', "{"], "e ", ['span.reserved', "=>"], " ", ['span.reserved', "reset"], ['span.paren.level1', "("], "val, e.target.value", ['span.paren.level1', ")"], ['span.paren.level3', "}"], "\n",
+        "           ", ['span.keyword', "onkeydown"], ['span.reserved', "="], ['span.paren.level3', "{"], "e ", ['span.reserved', "=>"], " ", ['span.paren.level1', "("], "e.which ", ['span.reserved', "==="], " 13 ", ['span.reserved', "?"], " save", ['span.paren.level2', "("], ['span.paren.level2', ")"], " ", ['span.reserved', ":"], "\n",
+        "                            e.which ", ['span.reserved', "==="], " 26 ", ['span.reserved', "?"], " stop", ['span.paren.level2', "("], ['span.paren.level2', ")"], " ", ['span.reserved', ":"], "\n",
+        "                            null", ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.reserved', "/"], ['span.reserved', ">"], "\n",
+        "  ", ['span.paren.level2', ")"], ";\n",
+        ['span.paren.level1', "}"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "TodoEdit"], " ", ['span.reserved', "="], " ", ['span.reserved', "r.createClass"], ['span.paren.level1', "("], ['span.paren.level2', "{"], "  ", ['span.comment', "// not quite equivalent to the original code"], "\n",
+        "  ", ['span.keyword', "componentDidMount"], ['span.reserved', ":"], " ", ['span.paren.level3', "("], ['span.paren.level1', "{"], "dom", ['span.paren.level1', "}"], ['span.paren.level3', ")"], " ", ['span.reserved', "=>"], " dom.focus", ['span.paren.level3', "("], ['span.paren.level3', ")"], ",\n",
+        "  ", ['span.keyword', "reagentRender"], ['span.reserved', ":"], "     params ", ['span.reserved', "=>"], " ", ['span.reserved', "<"], "TodoInput", ['span.reserved', ">"], ['span.paren.level3', "{"], "params", ['span.paren.level3', "}"], ['span.reserved', "<"], ['span.reserved', "/"], "TodoInput", ['span.reserved', ">"], ",\n",
+        ['span.paren.level2', "}"], ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "TodoStats"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level2', "{"], "filt, active, done", ['span.paren.level2', "}"], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "{"], "\n",
+        "  ", ['span.reserved', "let"], " attrsFor ", ['span.reserved', "="], " name ", ['span.reserved', "=>"], " ", ['span.paren.level2', "("], ['span.paren.level3', "{"], ['span.keyword', "class"], ['span.reserved', ":"], " ", ['span.paren.level1', "["], ['span.paren.level2', "("], "name ", ['span.reserved', "=="], " ", ['span.reserved', "deref"], ['span.paren.level3', "("], "filt", ['span.paren.level3', ")"], ['span.paren.level2', ")"], " ", ['span.reserved', "&&"], " ", ['span.keyword', "'selected'"], ['span.paren.level1', "]"], ",\n",
+        "                           ", ['span.keyword', "onclick"], ['span.reserved', ":"], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "reset"], ['span.paren.level1', "("], "filt, name", ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.paren.level2', ")"], ";\n",
+        "  ", ['span.reserved', "return"], " ", ['span.paren.level2', "("], "\n",
+        "    ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "span"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"todo-count\""], ['span.reserved', ">"], ['span.string', "\n        "], ['span.reserved', "<"], ['span.keyword', "strong"], ['span.reserved', ">"], ['span.paren.level3', "{"], "active", ['span.paren.level3', "}"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "strong"], ['span.reserved', ">"], ['span.string', " "], ['span.paren.level3', "{"], "active ", ['span.reserved', "=="], " 1 ", ['span.reserved', "?"], " ", ['span.string', "\"item\""], " ", ['span.reserved', ":"], " ", ['span.string', "\"items\""], ['span.paren.level3', "}"], ['span.string', " left\n      "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "span"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "ul"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"filters\""], ['span.reserved', ">"], ['span.string', "\n        "], ['span.reserved', "<"], ['span.keyword', "li"], ['span.reserved', ">"], ['span.reserved', "<"], ['span.keyword', "a"], " ", ['span.paren.level3', "{"], ['span.reserved', "..."], "attrsFor", ['span.paren.level1', "("], ['span.keyword', "'all'"], ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.reserved', ">"], ['span.string', "All"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "a"], ['span.reserved', ">"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "li"], ['span.reserved', ">"], ['span.string', "\n        "], ['span.reserved', "<"], ['span.keyword', "li"], ['span.reserved', ">"], ['span.reserved', "<"], ['span.keyword', "a"], " ", ['span.paren.level3', "{"], ['span.reserved', "..."], "attrsFor", ['span.paren.level1', "("], ['span.keyword', "'active'"], ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.reserved', ">"], ['span.string', "Active"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "a"], ['span.reserved', ">"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "li"], ['span.reserved', ">"], ['span.string', "\n        "], ['span.reserved', "<"], ['span.keyword', "li"], ['span.reserved', ">"], ['span.reserved', "<"], ['span.keyword', "a"], " ", ['span.paren.level3', "{"], ['span.reserved', "..."], "attrsFor", ['span.paren.level1', "("], ['span.keyword', "'done'"], ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.reserved', ">"], ['span.string', "Completed"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "a"], ['span.reserved', ">"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "li"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "ul"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.paren.level3', "{"], ['span.paren.level1', "("], "done ", ['span.reserved', ">"], " 0", ['span.paren.level1', ")"], " ", ['span.reserved', "&&"], "\n",
+        "         ", ['span.reserved', "<"], ['span.keyword', "button"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"clear-completed\""], " ", ['span.keyword', "onclick"], ['span.reserved', "="], ['span.paren.level1', "{"], "clearDone", ['span.paren.level1', "}"], ['span.reserved', ">"], ['span.string', "\n           Clear completed "], ['span.paren.level1', "{"], "done", ['span.paren.level1', "}"], ['span.string', "\n         "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "button"], ['span.reserved', ">"], ['span.paren.level3', "}"], "\n",
+        "    ", ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        "  ", ['span.paren.level2', ")"], ";\n",
+        ['span.paren.level1', "}"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "TodoItem"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "{"], "\n",
+        "  ", ['span.reserved', "let"], " editing ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level2', "("], ['span.reserved', "false"], ['span.paren.level2', ")"], ";\n",
+        "  ", ['span.reserved', "return"], " ", ['span.paren.level2', "("], ['span.paren.level3', "{"], "id, done, title", ['span.paren.level3', "}"], ['span.paren.level2', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level2', "("], "\n",
+        "    ", ['span.reserved', "<"], ['span.keyword', "li"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.paren.level3', "{"], ['span.paren.level1', "{"], ['span.keyword', "completed"], ['span.reserved', ":"], " done, ", ['span.keyword', "editing"], ['span.reserved', ":"], " ", ['span.reserved', "deref"], ['span.paren.level2', "("], "editing", ['span.paren.level2', ")"], ['span.paren.level1', "}"], ['span.paren.level3', "}"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.keyword', "div"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"view\""], ['span.reserved', ">"], "\n",
+        "        ", ['span.reserved', "<"], ['span.keyword', "input"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"toggle\""], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.paren.level3', "{"], "done", ['span.paren.level3', "}"], "\n",
+        "               ", ['span.keyword', "onchange"], ['span.reserved', "="], ['span.paren.level3', "{"], ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " toggle", ['span.paren.level1', "("], "id", ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.reserved', "/"], ['span.reserved', ">"], "\n",
+        "        ", ['span.reserved', "<"], ['span.keyword', "label"], " ", ['span.keyword', "ondblclick"], ['span.reserved', "="], ['span.paren.level3', "{"], ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "reset"], ['span.paren.level1', "("], "editing, ", ['span.reserved', "true"], ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.reserved', ">"], ['span.paren.level3', "{"], "title", ['span.paren.level3', "}"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "label"], ['span.reserved', ">"], ['span.string', "\n        "], ['span.reserved', "<"], ['span.keyword', "button"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"destroy\""], " ", ['span.keyword', "onclick"], ['span.reserved', "="], ['span.paren.level3', "{"], ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " remove", ['span.paren.level1', "("], "id", ['span.paren.level1', ")"], ['span.paren.level3', "}"], ['span.reserved', "/"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.paren.level3', "{"], ['span.reserved', "deref"], ['span.paren.level1', "("], "editing", ['span.paren.level1', ")"], " ", ['span.reserved', "&&"], "\n",
+        "         ", ['span.reserved', "<"], "TodoEdit", ['span.reserved', ">"], ['span.paren.level1', "{"], ['span.paren.level2', "{"], "\n",
+        "           ", ['span.keyword', "className"], ['span.reserved', ":"], " ", ['span.keyword', "'edit'"], ",  title,\n",
+        "           ", ['span.keyword', "onsave"], ['span.reserved', ":"], " it ", ['span.reserved', "=>"], " save", ['span.paren.level3', "("], "id, it", ['span.paren.level3', ")"], ",\n",
+        "           ", ['span.keyword', "onstop"], ['span.reserved', ":"], " ", ['span.paren.level3', "("], ['span.paren.level3', ")"], " ", ['span.reserved', "=>"], " ", ['span.reserved', "reset"], ['span.paren.level3', "("], "editing, ", ['span.reserved', "false"], ['span.paren.level3', ")"], ",\n",
+        "         ", ['span.paren.level2', "}"], ['span.paren.level1', "}"], ['span.reserved', "<"], ['span.reserved', "/"], "TodoEdit", ['span.reserved', ">"], ['span.paren.level3', "}"], "\n",
+        "    ", ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "li"], ['span.reserved', ">"], "\n",
+        "  ", ['span.paren.level2', ")"], ";\n",
+        ['span.paren.level1', "}"], ";\n",
+        "\n",
+        ['span.reserved', "let"], " ", ['span.declaration', "TodoApp"], " ", ['span.reserved', "="], " ", ['span.paren.level1', "("], ['span.paren.level1', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level1', "{"], "\n",
+        "  ", ['span.reserved', "let"], " filt ", ['span.reserved', "="], " ", ['span.reserved', "r.atom"], ['span.paren.level2', "("], ['span.keyword', "'all'"], ['span.paren.level2', ")"], ";\n",
+        "  ", ['span.reserved', "return"], " ", ['span.paren.level2', "("], ['span.paren.level2', ")"], " ", ['span.reserved', "=>"], " ", ['span.paren.level2', "{"], "\n",
+        "    ", ['span.reserved', "let"], " items ", ['span.reserved', "="], " ", ['span.reserved', "vals"], ['span.paren.level3', "("], " ", ['span.reserved', "deref"], ['span.paren.level1', "("], "todos", ['span.paren.level1', ")"], " ", ['span.paren.level3', ")"], ";\n",
+        "    ", ['span.reserved', "let"], " done ", ['span.reserved', "="], " items.filter", ['span.paren.level3', "("], "it ", ['span.reserved', "=>"], " it.done", ['span.paren.level3', ")"], ".length;\n",
+        "    ", ['span.reserved', "let"], " active ", ['span.reserved', "="], " items.length - done;\n",
+        "    ", ['span.reserved', "return"], " ", ['span.paren.level3', "("], "\n",
+        "      ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n        "], ['span.reserved', "<"], ['span.keyword', "section"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"todoapp\""], ['span.reserved', ">"], ['span.string', "\n          "], ['span.reserved', "<"], ['span.keyword', "header"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"header\""], ['span.reserved', ">"], ['span.string', "\n            "], ['span.reserved', "<"], ['span.keyword', "h1"], ['span.reserved', ">"], ['span.string', "todos"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "h1"], ['span.reserved', ">"], ['span.string', "\n            "], ['span.reserved', "<"], "TodoInput", ['span.reserved', ">"], ['span.paren.level1', "{"], ['span.paren.level2', "{"], "\n",
+        "              ", ['span.keyword', "id"], ['span.reserved', ":"], "          ", ['span.keyword', "'new-todo'"], ",\n",
+        "              ", ['span.keyword', "placeholder"], ['span.reserved', ":"], " ", ['span.string', "\"What needs to be done?\""], ",\n",
+        "              ", ['span.keyword', "onsave"], ['span.reserved', ":"], "      addTodo,\n",
+        "            ", ['span.paren.level2', "}"], ['span.paren.level1', "}"], ['span.reserved', "<"], ['span.reserved', "/"], "TodoInput", ['span.reserved', ">"], ['span.string', "\n          "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "header"], ['span.reserved', ">"], ['span.string', "\n          "], ['span.paren.level1', "{"], ['span.paren.level2', "("], "items.length ", ['span.reserved', ">"], " 0", ['span.paren.level2', ")"], " ", ['span.reserved', "&&"], "\n",
+        "             ", ['span.reserved', "<"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.string', "\n               "], ['span.reserved', "<"], ['span.keyword', "section"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"main\""], ['span.reserved', ">"], "\n",
+        "                 ", ['span.reserved', "<"], ['span.keyword', "input"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"toggle-all\""], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.paren.level2', "{"], "active ", ['span.reserved', "==="], " 0", ['span.paren.level2', "}"], "\n",
+        "                        ", ['span.keyword', "onchange"], ['span.reserved', "="], ['span.paren.level2', "{"], ['span.paren.level3', "("], ['span.paren.level3', ")"], " ", ['span.reserved', "=>"], " completeAll", ['span.paren.level3', "("], "active ", ['span.reserved', ">"], " 0", ['span.paren.level3', ")"], ['span.paren.level2', "}"], ['span.reserved', "/"], ['span.reserved', ">"], "\n",
+        "                 ", ['span.reserved', "<"], ['span.keyword', "label"], " ", ['span.keyword', "for"], ['span.reserved', "="], ['span.string', "\"toggle-all\""], ['span.reserved', ">"], ['span.string', "Mark all as complete"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "label"], ['span.reserved', ">"], ['span.string', "\n                 "], ['span.reserved', "<"], ['span.keyword', "ul"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"todo-list\""], ['span.reserved', ">"], ['span.string', "\n                   "], ['span.paren.level2', "{"], "items.filter", ['span.paren.level3', "("], ['span.reserved', "deref"], ['span.paren.level1', "("], "filt", ['span.paren.level1', ")"], " ", ['span.reserved', "==="], " ", ['span.keyword', "'active'"], " ", ['span.reserved', "?"], " ", ['span.paren.level1', "("], "it ", ['span.reserved', "=>"], " ", ['span.reserved', "!"], "it.done", ['span.paren.level1', ")"], " ", ['span.reserved', ":"], "\n",
+        "                                 ", ['span.reserved', "deref"], ['span.paren.level1', "("], "filt", ['span.paren.level1', ")"], " ", ['span.reserved', "==="], " ", ['span.keyword', "'done'"], "   ", ['span.reserved', "?"], " ", ['span.paren.level1', "("], "it ", ['span.reserved', "=>"], " it.done", ['span.paren.level1', ")"], "  ", ['span.reserved', ":"], "\n",
+        "                                 ", ['span.reserved', "identity"], ['span.paren.level3', ")"], ".map", ['span.paren.level3', "("], "todo ", ['span.reserved', "=>"], "\n",
+        "                      ", ['span.reserved', "<"], "TodoItem ", ['span.keyword', "key"], ['span.reserved', "="], ['span.paren.level1', "{"], "todo.id", ['span.paren.level1', "}"], ['span.reserved', ">"], ['span.paren.level1', "{"], "todo", ['span.paren.level1', "}"], ['span.reserved', "<"], ['span.reserved', "/"], "TodoItem", ['span.reserved', ">"], ['span.paren.level3', ")"], ['span.paren.level2', "}"], ['span.string', "\n                 "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "ul"], ['span.reserved', ">"], ['span.string', "\n               "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "section"], ['span.reserved', ">"], ['span.string', "\n               "], ['span.reserved', "<"], ['span.keyword', "footer"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"footer\""], ['span.reserved', ">"], ['span.string', "\n                 "], ['span.reserved', "<"], "TodoStats", ['span.reserved', ">"], ['span.paren.level2', "{"], ['span.paren.level3', "{"], "active, done, filt", ['span.paren.level3', "}"], ['span.paren.level2', "}"], ['span.reserved', "<"], ['span.reserved', "/"], "TodoStats", ['span.reserved', ">"], ['span.string', "\n               "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "footer"], ['span.reserved', ">"], ['span.string', "\n             "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], ['span.paren.level1', "}"], "\n",
+        "        ", ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "section"], ['span.reserved', ">"], ['span.string', "\n        "], ['span.reserved', "<"], ['span.keyword', "footer"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"info\""], ['span.reserved', ">"], ['span.string', "\n          "], ['span.reserved', "<"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "Double-click to edit a todo"], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "p"], ['span.reserved', ">"], ['span.string', "\n        "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "footer"], ['span.reserved', ">"], ['span.string', "\n      "], ['span.reserved', "<"], ['span.reserved', "/"], ['span.keyword', "div"], ['span.reserved', ">"], "\n",
+        "    ", ['span.paren.level3', ")"], ";\n",
+        "  ", ['span.paren.level2', "}"], ";\n",
+        ['span.paren.level1', "}"], ";\n",
+        "\n",
+        "\n",
+        ['span.comment', "// init"], "\n",
+        "addTodo", ['span.paren.level1', "("], ['span.string', "\"Rename Cloact to Reagent\""], ['span.paren.level1', ")"], ";\n",
+        "addTodo", ['span.paren.level1', "("], ['span.string', "\"Add undo demo\""], ['span.paren.level1', ")"], ";\n",
+        "addTodo", ['span.paren.level1', "("], ['span.string', "\"Make all rendering async\""], ['span.paren.level1', ")"], ";\n",
+        "addTodo", ['span.paren.level1', "("], ['span.string', "\"Allow any arguments to component functions\""], ['span.paren.level1', ")"], ";\n",
+        "completeAll", ['span.paren.level1', "("], ['span.reserved', "true"], ['span.paren.level1', ")"], ";\n",
+        "\n",
+        ['span.reserved', "r.render"], ['span.paren.level1', "("], ['span.reserved', "<"], "TodoApp", ['span.reserved', "/"], ['span.reserved', ">"], ", ", ['span.reserved', "document.getElementById"], ['span.paren.level2', "("], ['span.keyword', "'app'"], ['span.paren.level2', ")"], ['span.paren.level1', ")"], ";"],
     coffee: (
 `{reagent: r, atom: {deref, reset, swap},
  util: {identity, dict, entries, vals, getIn,

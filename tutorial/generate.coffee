@@ -1,4 +1,4 @@
-[fs, {spawnSync}, {html, markdown, parseJs, parseCoffee, parseWisp, parseHtml}] = ['fs', 'child_process', './prerender'].map require
+[fs, {spawnSync}, {html, markdown, parseJs, parseJsx, parseCoffee, parseWisp, parseHtml}] = ['fs', 'child_process', './prerender'].map require
 
 KEYS = ['reagent', 're-frame']
 
@@ -66,8 +66,9 @@ for key in KEYS
   for name, o of EXPORTS[key]
     console.log "\t#{name}"
     _o = {}
-    for lang in ['js', 'coffee', 'wisp']
-      _o[lang] = (fs.readFileSync "tutorial/#{key}/#{name}.#{lang}", 'utf-8').trim()
+    for lang in ['js', 'jsx', 'coffee', 'wisp']
+      if withHtml or lang isnt 'jsx'
+        _o[lang] = (fs.readFileSync "tutorial/#{key}/#{name}.#{lang}", 'utf-8').trim()
     o.className = o.className or 'simple'
     o.eval = ("let require = path => path.split('/').reduce((x, k) => x[k], this);\n\n" +
               _o.js.replace(/^\/\/prelude: /g, "").replace(/(\nr\.render\(\[(.*)\], .*)?$/, (s, _, comp) -> "\nreturn #{comp or name};"))
@@ -79,6 +80,7 @@ for key in KEYS
       o[lang] = s.replace(/^\/\/prelude: .*\n/g, "").replace(/^$/g, " ")
       o["#{lang}_"] = switch lang
         when 'js'     then parseJs     o[lang]
+        when 'jsx'    then parseJsx    o[lang]
         when 'coffee' then parseCoffee o[lang]
         when 'wisp'   then parseWisp   o[lang]
 

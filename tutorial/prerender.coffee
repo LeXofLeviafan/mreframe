@@ -12,7 +12,7 @@ SYMBOL  = "[_a-zA-Z][_a-zA-Z0-9]*"
 KEYWORD = "'[^']+'|#{SYMBOL}(?=:)"
 LIBRARY = _words "identity dict entries vals getIn merge assoc assocIn dissoc updateIn chain range map filter deref reset swap rf?\\.#{SYMBOL}"
 RUNTIME = _words "setTimeout setInterval parseInt Date Number require fetch \\.(then|catch) (document|console|localStorage|Promise|JSON|Math)\\.#{SYMBOL}"
-RESERVED_JS  = _words "var let const if then else switch case try catch return new true false"
+RESERVED_JS  = _words "var let const if then else switch case try catch return new true false import from"
 OPERATORS_JS = _words "! && \\|\\| => === == = < > \\+ / \\* \\? : \\.\\.\\."
 RESERVED_COFFEE  = _words "if then else switch when try catch new not and or true false yes no on off is isnt"
 OPERATORS_COFFEE = _words "=> -> = < > \\+ / \\* \\.\\.\\."
@@ -85,7 +85,7 @@ exports.markdown = do (parser = new Turndown headingStyle: 'atx', codeBlockStyle
     (parser.turndown _root.outerHTML).trim() + "\n"
 
 
-_parser = ({symbol, keyword, reserved, operators, declaration, comment}) -> (input) ->
+_parser = ({symbol, keyword, reserved, operators, declaration, comment, string}) -> (input) ->
   lexer = new Lexer
 
   [_level, _text] = [0, ""]
@@ -101,6 +101,8 @@ _parser = ({symbol, keyword, reserved, operators, declaration, comment}) -> (inp
   if comment
     lexer.rule RegExp(comment), (ctx) -> ctx.accept 'comment'
   lexer.rule /\"([^"]*)\"/, (ctx) -> ctx.accept 'string'
+  if string
+    lexer.rule RegExp(string), (ctx) -> ctx.accept 'string'
   lexer.rule RegExp(keyword), (ctx) -> ctx.accept 'keyword'
   lexer.rule /[\[\](){}]/, (ctx) -> ctx.accept "paren.level#{_level % 3 + 1}"
   if reserved
@@ -128,6 +130,15 @@ exports.parseJs = _parser
   operators:   OPERATORS_JS
   declaration: "(?<=(^|\n)(var|let|const)\\s+)#{SYMBOL}#{NOT_REQUIRE}"
   comment:     "//.*"
+
+exports.parseJsx = _parser
+  symbol:      SYMBOL
+  keyword:     "#{KEYWORD}|#{KEYWORD_HTML}|(?<=</?)(?=[a-z])#{SYMBOL_HTML}(?=[ >])"
+  reserved:    [].concat LIBRARY.map((s) -> "(?<!import .*)#{s}(?!.* from)"), RUNTIME, RESERVED_JS
+  operators:   [].concat OPERATORS_JS, OPERATORS_HTML
+  string:      "(?<=<.*>|<.*>[^<]*{.*})((?!\\);\n)[^{}<>])+(?={|<.*>)"  # ');\n' is a workaround for a specific case
+  declaration: "(?<=(^|\n)(var|let|const)\\s+)#{SYMBOL}#{NOT_REQUIRE}"
+  comment:     "//.*|/\\*.*\\*/"
 
 exports.parseCoffee = _parser
   symbol:      SYMBOL
