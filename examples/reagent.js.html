@@ -6,7 +6,7 @@
 </head><body>
   <script>
     /* Console output logs init/render events, and demonstrates automatic redraw detection */
-    const [{reagent: r, atom: {atom, deref, swap}}, m, mredraw, mmount] = ['mreframe', 'mithril/hyperscript'].map(require);
+    const [{reagent: r, atom: {atom, deref, swap}}, m] = ['mreframe', 'mithril/hyperscript'].map(require);
 
     // Mithril component using 'this'
     let Component = {

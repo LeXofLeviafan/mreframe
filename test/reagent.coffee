@@ -138,13 +138,6 @@ o.spec "mreframe/reagent", ->
     o(res).deepEquals([self, evt, 42])			"event wrappers pass 'this' and the event, and return result of the handler"
     o(attrs.onfocus).equals(null)			"non-function event values aren't modified"
 
-  o "adaptComponent()", ->
-    mcomp = view: -> "Hello, World!"
-    rcomp = r.adaptComponent mcomp
-    o(type rcomp).equals(Function)			"produces a Reagent (function) component"
-    o(rcomp 'foo', 'bar', 'baz')
-      .deepEquals(['>', mcomp, 'foo', 'bar', 'baz'])	"produced component generates :> forms"
-
   o "with()", ->
     form = [-> "Hello, World"]
     meta = key: 42
@@ -251,6 +244,22 @@ o.spec "mreframe/reagent", ->
       .deepEquals(vnode 'div', {}, spanVnodes())	"renders children without keys without grouping them"
     o(r.asElement ['div', ...spans 'keys'])
       .deepEquals(vnode$ 'div', {}, spanVnodes 'keys')	"renders children with keys as a single list"
+
+  o "adaptComponent()", ->
+    mcomp = view: ({attrs: {name}, children}) -> "Hello, #{name or '['+children+']'}!"
+    rcomp = r.adaptComponent mcomp
+    o(type rcomp).equals(Function)			"produces a Reagent (function) component"
+    form = ['>', mcomp, 'foo', 'bar', 'baz']
+    form._meta = undefined
+    o(rcomp 'foo', 'bar', 'baz').deepEquals(form)	"produced component generates :> forms"
+    _render = (form) -> do (rnode = r.asElement form) ->
+      rnode.tag.oninit rnode
+      mnode = rnode.tag.view rnode
+      mnode.tag.view mnode
+    o(_render [rcomp, 'foo', 'bar', 'baz'])
+      .equals("Hello, [foo,bar,baz]!")			"produced component handles children"
+    o(_render r.with(name: "World", [rcomp, 'foo', 'bar', 'baz']))
+      .equals("Hello, World!")				"produced component handles meta"
 
   o "resetCache()", ->
     fcomp = -> 42

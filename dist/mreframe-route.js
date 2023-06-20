@@ -2254,7 +2254,25 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
 
 }).call(this);
 
-},{"./util":25}],23:[function(require,module,exports){
+},{"./util":26}],23:[function(require,module,exports){
+(function() {
+  var jsx, r;
+
+  r = require('./reagent');
+
+  jsx = (tag, {children = [], ...attrs}, key) => { // this API isn't documented properly...
+    return r.with({key, ...attrs}, [tag].concat(children));
+  };
+
+  module.exports = {
+    jsx,
+    jsxs: jsx,
+    Fragment: '<>'
+  };
+
+}).call(this);
+
+},{"./reagent":25}],24:[function(require,module,exports){
 (function() {
 
   /*
@@ -2747,9 +2765,9 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
 
 }).call(this);
 
-},{"./atom":22,"./reagent":24,"./util":25}],24:[function(require,module,exports){
+},{"./atom":22,"./reagent":25,"./util":26}],25:[function(require,module,exports){
 (function() {
-  var RAtom, RCursor, _createElement, _cursor, _detectChanges, _eqArgs, _fnElement, _fragment_, _meta, _mithril_, _mount_, _moveParent, _propagate, _quiet, _quietEvents, _redraw_, _renderCache, _rendering, _vnode, argv, asElement, assocIn, atom, children, classNames, deref, eqShallow, getIn, identical, identity, isArray, keys, merge, prepareAttrs, props, ratom, reset, second, stateAtom, swap;
+  var RAtom, RCursor, _createElement, _cursor, _detectChanges, _eqArgs, _fnElement, _fragment_, _meta, _mithril_, _mount_, _moveParent, _propagate, _quiet, _quietEvents, _redraw_, _renderCache, _rendering, _vnode, _with, argv, asElement, assocIn, atom, children, classNames, deref, eqShallow, getIn, identical, identity, isArray, keys, merge, prepareAttrs, props, ratom, reset, second, stateAtom, swap;
 
   ({identical, eqShallow, isArray, keys, getIn, merge, assocIn, identity} = require('./util'));
 
@@ -2787,7 +2805,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   };
 
   _eqArgs = (xs, ys) => {
-    return (!xs && !ys) || ((xs != null ? xs.length : void 0) === (ys != null ? ys.length : void 0) && xs.every((x, i) => {
+    return (!xs && !ys) || ((xs != null ? xs.length : void 0) === (ys != null ? ys.length : void 0) && eqShallow(xs._meta, ys._meta) && xs.every((x, i) => {
       return eqShallow(x, ys[i]);
     }));
   };
@@ -2803,13 +2821,15 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
 
   _rendering = (binding) => {
     return function(vnode) {
+      var _old;
+      _old = _vnode;
       _vnode = vnode;
       try {
         this._subs.clear();
         this._argv = vnode.attrs.argv; // last render args
         return binding.call(this, vnode);
       } finally {
-        _vnode = null;
+        _vnode = _old;
       }
     };
   };
@@ -2898,7 +2918,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   };
 
   /* Adds metadata to the Hiccup form of a Reagent component or a fragment */
-  exports.with = (meta, form) => {
+  exports.with = _with = (meta, form) => {
     form = form.slice(0);
     form._meta = meta;
     return form;
@@ -3017,7 +3037,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   /* Converts a Mithril component into a Reagent component */
   exports.adaptComponent = (c) => {
     return (...args) => {
-      return ['>', c, ...args];
+      return _with(_vnode != null ? _vnode.attrs : void 0, ['>', c, ...args]);
     };
   };
 
@@ -3123,7 +3143,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
 
 }).call(this);
 
-},{"./atom":22,"./util":25}],25:[function(require,module,exports){
+},{"./atom":22,"./util":26}],26:[function(require,module,exports){
 (function() {
   var _dict, _entries, assoc, assocIn, entries, eq, eqArr, eqObj, eqObjShallow, eqShallow, flatten, getIn, identical, identity, isArray, isDict, keys, merge, replacer, sorter, type, update, vals;
 
@@ -3135,7 +3155,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
     if (x == null) {
       return x;
     } else {
-      return x.__proto__.constructor;
+      return Object.getPrototypeOf(x).constructor;
     }
   };
 
@@ -3358,7 +3378,13 @@ module.exports = require("./api/router")(typeof window !== "undefined" ? window 
 
 }).call(this);
 
-},{"./src/atom":22}],"mreframe/re-frame":[function(require,module,exports){
+},{"./src/atom":22}],"mreframe/jsx-runtime":[function(require,module,exports){
+(function() {
+  module.exports = require('./src/jsx-runtime');
+
+}).call(this);
+
+},{"./src/jsx-runtime":23}],"mreframe/re-frame":[function(require,module,exports){
 (function() {
   var hyperscript, mount, reFrame, redraw;
 
@@ -3374,7 +3400,7 @@ module.exports = require("./api/router")(typeof window !== "undefined" ? window 
 
 }).call(this);
 
-},{"./src/re-frame":23,"mithril/hyperscript":"mithril/hyperscript","mithril/mount":"mithril/mount","mithril/redraw":"mithril/redraw"}],"mreframe/reagent":[function(require,module,exports){
+},{"./src/re-frame":24,"mithril/hyperscript":"mithril/hyperscript","mithril/mount":"mithril/mount","mithril/redraw":"mithril/redraw"}],"mreframe/reagent":[function(require,module,exports){
 (function() {
   var hyperscript, mount, reagent, redraw;
 
@@ -3390,13 +3416,13 @@ module.exports = require("./api/router")(typeof window !== "undefined" ? window 
 
 }).call(this);
 
-},{"./src/reagent":24,"mithril/hyperscript":"mithril/hyperscript","mithril/mount":"mithril/mount","mithril/redraw":"mithril/redraw"}],"mreframe/util":[function(require,module,exports){
+},{"./src/reagent":25,"mithril/hyperscript":"mithril/hyperscript","mithril/mount":"mithril/mount","mithril/redraw":"mithril/redraw"}],"mreframe/util":[function(require,module,exports){
 (function() {
   module.exports = require('./src/util');
 
 }).call(this);
 
-},{"./src/util":25}],"mreframe":[function(require,module,exports){
+},{"./src/util":26}],"mreframe":[function(require,module,exports){
 (function() {
   var _init, atom, exports, hyperscript, mount, reFrame, reagent, redraw, util;
 

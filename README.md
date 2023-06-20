@@ -148,6 +148,8 @@ For further information, see [API reference](#api-reference) below and the follo
 * Q: I have a _huge_ amount of DB events per second in my app, can I disable the deep-equality check in `db` effect handler?  
   A: Specify `eq` in [`rf._init`](docs/re-frame.md#_init-opts) to replace it with either [`eqShallow`](docs/util.md#eqShallow-a-b)
   or [`indentical`](docs/util.md#identical-a-b).
+* Q: I hate commas and languages that aren't syntactical supersets of JS. Can I still use this somehow?  
+  A: Well if you _absolutely must_, you can [use JSX](docs/jsx-runtime.md). (Note that JSX is not exatly a great match for Reagent components.)
 
 
 # Examples
@@ -161,6 +163,7 @@ For further information, see [API reference](#api-reference) below and the follo
 * [Routing using `mithril/route` (from `mreframe-route.js`)](examples/route.js.html) (scripted in JavaScript)
   [[live]](https://lexofleviafan.github.io/mreframe/examples/route.js.html)
 * [Rendering HTML from Reagent components using `mithril-node-render`](examples/node-render.coffee) (scripted in CoffeeScript)
+* [JSX usage example](examples/reagent.jsx)
 
 
 # API reference
@@ -174,6 +177,8 @@ For further information, see [API reference](#api-reference) below and the follo
   [Hiccup](https://cljdoc.org/d/reagent/reagent/1.0.0/doc/tutorials/using-hiccup-to-describe-html)-based component interface
   for Mithril;
 * [`re-frame`](docs/re-frame.md) defines a system for managing state/side-effects in a Reagent/Mithril application.
+
+There's also [`jsx-runtime`](docs/jsx-runtime.md) which isn't included in main module (it implements JSX support).
 
 Each of these can be used separately (`require('mreframe/<name>')`), or as part of the main module
 (`require('mreframe').<name>`; `.reFrame` in case of `re-frame` module). Note that the nodeps bundle doesn't load
