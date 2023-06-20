@@ -1,6 +1,6 @@
 [fs, {dirname}, {spawnSync}, CoffeeScript] = ['fs', 'path', 'child_process', 'coffeescript'].map require
 
-modules = ['util', 'atom', 'reagent', 're-frame']
+modules = ['util', 'atom', 'reagent', 're-frame', 'jsx-runtime']
 deps = "mithril/mount,mithril/render,mithril/redraw,mithril/hyperscript"
 depsRoute = "#{deps},mithril/route"
 

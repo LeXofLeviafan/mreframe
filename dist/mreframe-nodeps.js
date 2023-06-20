@@ -47,7 +47,25 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
 }).call(this);
 
-},{"./util":"mreframe/util"}],"mreframe/re-frame":[function(require,module,exports){
+},{"./util":"mreframe/util"}],"mreframe/jsx-runtime":[function(require,module,exports){
+(function() {
+  var jsx, r;
+
+  r = require('./reagent');
+
+  jsx = (tag, {children = [], ...attrs}, key) => { // this API isn't documented properly...
+    return r.with({key, ...attrs}, [tag].concat(children));
+  };
+
+  module.exports = {
+    jsx,
+    jsxs: jsx,
+    Fragment: '<>'
+  };
+
+}).call(this);
+
+},{"./reagent":"mreframe/reagent"}],"mreframe/re-frame":[function(require,module,exports){
 (function() {
 
   /*
@@ -542,7 +560,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
 },{"./atom":"mreframe/atom","./reagent":"mreframe/reagent","./util":"mreframe/util"}],"mreframe/reagent":[function(require,module,exports){
 (function() {
-  var RAtom, RCursor, _createElement, _cursor, _detectChanges, _eqArgs, _fnElement, _fragment_, _meta, _mithril_, _mount_, _moveParent, _propagate, _quiet, _quietEvents, _redraw_, _renderCache, _rendering, _vnode, argv, asElement, assocIn, atom, children, classNames, deref, eqShallow, getIn, identical, identity, isArray, keys, merge, prepareAttrs, props, ratom, reset, second, stateAtom, swap;
+  var RAtom, RCursor, _createElement, _cursor, _detectChanges, _eqArgs, _fnElement, _fragment_, _meta, _mithril_, _mount_, _moveParent, _propagate, _quiet, _quietEvents, _redraw_, _renderCache, _rendering, _vnode, _with, argv, asElement, assocIn, atom, children, classNames, deref, eqShallow, getIn, identical, identity, isArray, keys, merge, prepareAttrs, props, ratom, reset, second, stateAtom, swap;
 
   ({identical, eqShallow, isArray, keys, getIn, merge, assocIn, identity} = require('./util'));
 
@@ -580,7 +598,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
   };
 
   _eqArgs = (xs, ys) => {
-    return (!xs && !ys) || ((xs != null ? xs.length : void 0) === (ys != null ? ys.length : void 0) && xs.every((x, i) => {
+    return (!xs && !ys) || ((xs != null ? xs.length : void 0) === (ys != null ? ys.length : void 0) && eqShallow(xs._meta, ys._meta) && xs.every((x, i) => {
       return eqShallow(x, ys[i]);
     }));
   };
@@ -596,13 +614,15 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
   _rendering = (binding) => {
     return function(vnode) {
+      var _old;
+      _old = _vnode;
       _vnode = vnode;
       try {
         this._subs.clear();
         this._argv = vnode.attrs.argv; // last render args
         return binding.call(this, vnode);
       } finally {
-        _vnode = null;
+        _vnode = _old;
       }
     };
   };
@@ -691,7 +711,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
   };
 
   /* Adds metadata to the Hiccup form of a Reagent component or a fragment */
-  exports.with = (meta, form) => {
+  exports.with = _with = (meta, form) => {
     form = form.slice(0);
     form._meta = meta;
     return form;
@@ -810,7 +830,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
   /* Converts a Mithril component into a Reagent component */
   exports.adaptComponent = (c) => {
     return (...args) => {
-      return ['>', c, ...args];
+      return _with(_vnode != null ? _vnode.attrs : void 0, ['>', c, ...args]);
     };
   };
 
@@ -928,7 +948,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     if (x == null) {
       return x;
     } else {
-      return x.__proto__.constructor;
+      return Object.getPrototypeOf(x).constructor;
     }
   };
 

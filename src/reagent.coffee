@@ -21,20 +21,21 @@ _propagate = (vnode, ratom, value) =>
     vnode = vnode._parent
   value
 
-_eqArgs = (xs, ys) => (not xs and not ys) or (xs?.length is ys?.length and xs.every (x, i) => eqShallow x, ys[i])
+_eqArgs = (xs, ys) => (not xs and not ys) or
+  (xs?.length is ys?.length and eqShallow(xs._meta, ys._meta) and xs.every (x, i) => eqShallow x, ys[i])
 
 _detectChanges = (vnode) -> not _eqArgs(vnode.attrs.argv, @_argv) or                   # arguments changed?
   ((subs = Array.from(@_subs)).some ([ratom, value]) => ratom._deref() isnt value) or  # ratoms changed?
   (subs.forEach(([ratom, value]) => _propagate vnode._parent, ratom, value);  no)      # no changes, propagating ratoms
 
 _rendering = (binding) => (vnode) ->
-  _vnode = vnode
+  _old = _vnode;  _vnode = vnode
   try
     @_subs.clear()
     @_argv = vnode.attrs.argv  # last render args
     binding.call @, vnode
   finally
-    _vnode = null
+    _vnode = _old
 
 _fnElement = (fcomponent) =>
   unless _renderCache.has fcomponent
@@ -74,7 +75,7 @@ exports.asElement = asElement = (form) =>
 exports.render = (comp, container) => _mount_ container, view: => asElement comp
 
 ### Adds metadata to the Hiccup form of a Reagent component or a fragment ###
-exports.with = (meta, form) => form = form[..];  form._meta = meta;  form
+exports.with = _with = (meta, form) => form = form[..];  form._meta = meta;  form
 
 ###
   Creates a class component based on the spec. (It's a valid Mithril component.)
@@ -129,7 +130,7 @@ _cursor = (ratom) => (path, value) =>  # value is optional but undefined would b
 exports.cursor = (src, path) => new RCursor (if typeof src is 'function' then src else _cursor src), path
 
 ### Converts a Mithril component into a Reagent component ###
-exports.adaptComponent = (c) => (...args) => ['>', c, ...args]
+exports.adaptComponent = (c) => (...args) => _with _vnode?.attrs, ['>', c, ...args]
 
 ### Merges provided class definitions into a string (definitions can be strings, lists or dicts) ###
 exports.classNames = classNames = (...classes) =>

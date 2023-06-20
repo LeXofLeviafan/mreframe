@@ -81,10 +81,11 @@ Note regarding `classList`: in Mithril, it works same way as `class` or `classNa
 except that including classes in tag selector (e.g. `div.foo`) _overrides_ it instead of it being appended to generated CSS classes.
 
 ### [`adaptComponent (c)`](http://reagent-project.github.io/docs/master/reagent.core.html#var-adapt-react-class)
-Converts a Mithril component into a Reagent component.
+Converts a Mithril component into a Reagent component.  
+Its arguments are passed to the vnode as `children`, and metadata is passed as `attrs`.
 ```js
-var x = r.adaptComponent({view: ({children}) => m('div', "Hello, World", children)}),
-    y = () => [x, 1, 2, 3] // ~ ['>', x, 1, 2, 3]
+var x = r.adaptComponent({view: ({attrs, children}) => m('div', attrs, "Hello, World", children)}),
+    y = () => r.with(meta, [x, 1, 2, 3]) // ~ ['>', x, meta, 1, 2, 3]
 ```
 
 ### [`asElement (form)`](http://reagent-project.github.io/docs/master/reagent.core.html#var-as-element)

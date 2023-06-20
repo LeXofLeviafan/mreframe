@@ -1,5 +1,5 @@
 exports.identity = identity = (x) => x
-exports.type = type = (x) => unless x? then x else x.__proto__.constructor
+exports.type = type = (x) => unless x? then x else Object.getPrototypeOf(x).constructor
 exports.keys = keys = (x) => Object.keys x or {}
 exports.vals = vals = (x) => Object.values x or {}
 _entries = Object.entries or ((o) => keys(o).map (k) => [k, o[k]])
