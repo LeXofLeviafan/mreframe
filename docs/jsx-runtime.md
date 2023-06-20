@@ -27,11 +27,11 @@ In order to use `mreframe` with JSX, you need to do the following:
     ]
   }
   ```
-* add a `script` command (in `package.json`) to run Babel; e.g.
+* add a `scripts` command (in `package.json`) to run Babel; e.g.
   ```json
   {
     ...
-    "script": {
+    "scripts": {
       "build": "babel src/ -d dist/"
     }
     ...
