@@ -316,7 +316,7 @@ r.render([simpleExample], document.getElementById('app'));
 ```html
 <div>
   <h1>Hello world, it is now</h1>
-  <div style="color:#f34" class="example-clock">
+  <div class="example-clock" style="color:#f34">
     02:25:00
   </div>
   <div class="color-input">
@@ -454,33 +454,33 @@ r.render([todoApp], document.getElementById('app'));
     </header>
     <div>
       <section id="main">
-        <input type="checkbox" checked="" id="toggle-all">
+        <input type="checkbox" id="toggle-all" checked="">
         <label for="toggle-all">Mark all as complete</label>
         <ul id="todo-list">
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle">
+              <input type="checkbox" class="toggle" checked="">
               <label>Rename Cloact to Reagent</label>
               <button class="destroy"></button>
             </div>
           </li>
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle">
+              <input type="checkbox" class="toggle" checked="">
               <label>Add undo demo</label>
               <button class="destroy"></button>
             </div>
           </li>
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle">
+              <input type="checkbox" class="toggle" checked="">
               <label>Make all rendering async</label>
               <button class="destroy"></button>
             </div>
           </li>
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle">
+              <input type="checkbox" class="toggle" checked="">
               <label>Allow any arguments to component functions</label>
               <button class="destroy"></button>
             </div>

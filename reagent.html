@@ -35,7 +35,7 @@
 <p>A very basic Reagent component may look something like this:</p>
 
 <h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
-<div id="simple-component" class="example simple"><div>
+<div class="example simple" id="simple-component"><div>
   <p>I am a component!</p>
   <p class="someclass">
     I have <strong>bold</strong><span style="color:red"> and red </span>text.
@@ -52,7 +52,7 @@
 <p>You can build new components using other components as building blocks. Like this:</p>
 
 <h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
-<div id="simple-parent" class="example simple"><div>
+<div class="example simple" id="simple-parent"><div>
   <p>I include simpleComponent.</p>
   <div>
     <p>I am a component!</p>
@@ -70,7 +70,7 @@
 <p>Data is passed to child components using plain old JS data types. Like this:</p>
 
 <h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
-<div id="say-hello" class="example simple"><p>Hello, world!</p></div>
+<div class="example simple" id="say-hello"><p>Hello, world!</p></div>
 <h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
 <pre class="source simple"><code class="language-js">let helloComponent = (name) =&gt;
   ['p', "Hello, ", name, "!"];
@@ -84,7 +84,7 @@ More advanced components though (see below) must be called with square brackets.
 <p>Here is another example that shows items in a list:</p>
 
 <h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
-<div id="lister-user" class="example simple"><div>
+<div class="example simple" id="lister-user"><div>
   Here is a list:
   <ul>
     <li>Item 0</li>
@@ -120,7 +120,7 @@ See Mithril <a href="https://mithril.js.org/keys.html" target="_blank">documenta
 <p>Let’s demonstrate that with a simple example:</p>
 
 <h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
-<div id="counting-component" class="example simple"><div>
+<div class="example simple" id="counting-component"><div>
   The atom <code>clickCount</code> has value: 0. <input type="button" value="Click me!"/>
 </div></div>
 <h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
@@ -139,7 +139,7 @@ let countingComponent = () =&gt;
 <p>Here is an example of that, where we call <code>setTimeout</code> every time the component is rendered to update a counter:</p>
 
 <h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
-<div id="timer-component" class="example simple"><div>
+<div class="example simple" id="timer-component"><div>
   Seconds Elapsed: 0
 </div></div>
 <h3 class="source-heading simple">Source<span class="source-lang">JS</span></h3>
@@ -159,7 +159,7 @@ let timerComponent = () =&gt; {
 <p>By simply passing a <code>r.atom</code> around you can share state management between components, like this:</p>
 
 <h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
-<div id="shared-state" class="example simple"><div>
+<div class="example simple" id="shared-state"><div>
   <p>The value is now: foo</p>
   <p>Change it here: <input type="text" value="foo"/></p>
 </div></div>
@@ -203,7 +203,7 @@ r.render([simpleComponent], document.body);</code></pre>
 <p>Data is kept in a single <code>r.atom</code>: a dict with height, weight and BMI as keys.</p>
 
 <h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
-<div id="bmi-component" class="example simple"><div>
+<div class="example simple" id="bmi-component"><div>
   <h3>BMI calculator</h3>
   <div>
     Height: 180cm
@@ -290,9 +290,9 @@ When it is loaded into the browser, Mithril automatically attaches event-handler
 <h2 id="complete-demo">Complete demo</h2>
 
 <h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
-<div id="simple-example" class="example simple"><div>
+<div class="example simple" id="simple-example"><div>
   <h1>Hello world, it is now</h1>
-  <div style="color:#f34" class="example-clock">
+  <div class="example-clock" style="color:#f34">
     02:25:00
   </div>
   <div class="color-input">
@@ -338,7 +338,7 @@ r.render([simpleExample], document.getElementById('app'));</code></pre>
 <p>The obligatory todo list looks roughly like this in Reagent (cheating a little bit by skipping routing and persistence):</p>
 
 <h3 class="example-heading">Example<a class="example-hide">hide</a></h3>
-<div id="todo-app" class="example todo-app"><div>
+<div class="example todo-app" id="todo-app"><div>
   <section id="todoapp">
     <header id="header">
       <h1>todos</h1>
@@ -346,33 +346,33 @@ r.render([simpleExample], document.getElementById('app'));</code></pre>
     </header>
     <div>
       <section id="main">
-        <input type="checkbox" checked="" id="toggle-all"/>
+        <input type="checkbox" id="toggle-all" checked=""/>
         <label for="toggle-all">Mark all as complete</label>
         <ul id="todo-list">
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle"/>
+              <input type="checkbox" class="toggle" checked=""/>
               <label>Rename Cloact to Reagent</label>
               <button class="destroy"></button>
             </div>
           </li>
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle"/>
+              <input type="checkbox" class="toggle" checked=""/>
               <label>Add undo demo</label>
               <button class="destroy"></button>
             </div>
           </li>
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle"/>
+              <input type="checkbox" class="toggle" checked=""/>
               <label>Make all rendering async</label>
               <button class="destroy"></button>
             </div>
           </li>
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle"/>
+              <input type="checkbox" class="toggle" checked=""/>
               <label>Allow any arguments to component functions</label>
               <button class="destroy"></button>
             </div>

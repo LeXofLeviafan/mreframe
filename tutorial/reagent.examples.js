@@ -1412,7 +1412,7 @@ return simpleExample;`
     html: (
 `<div>
   <h1>Hello world, it is now</h1>
-  <div style="color:#f34" class="example-clock">
+  <div class="example-clock" style="color:#f34">
     02:25:00
   </div>
   <div class="color-input">
@@ -1424,7 +1424,7 @@ return simpleExample;`
       ['<>',
         ['span.reserved', "<"], ['span.declaration', "div"], ['span.reserved', ">"], "\n",
         "  ", ['span.reserved', "<"], ['span.declaration', "h1"], ['span.reserved', ">"], "Hello world, it is now", ['span.reserved', "</"], ['span.declaration', "h1"], ['span.reserved', ">"], "\n",
-        "  ", ['span.reserved', "<"], ['span.declaration', "div"], " ", ['span.keyword', "style"], ['span.reserved', "="], ['span.string', "\"color:#f34\""], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"example-clock\""], ['span.reserved', ">"], "\n",
+        "  ", ['span.reserved', "<"], ['span.declaration', "div"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"example-clock\""], " ", ['span.keyword', "style"], ['span.reserved', "="], ['span.string', "\"color:#f34\""], ['span.reserved', ">"], "\n",
         "    02:25:00\n",
         "  ", ['span.reserved', "</"], ['span.declaration', "div"], ['span.reserved', ">"], "\n",
         "  ", ['span.reserved', "<"], ['span.declaration', "div"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"color-input\""], ['span.reserved', ">"], "\n",
@@ -1835,33 +1835,33 @@ return todoApp;`
     </header>
     <div>
       <section id="main">
-        <input type="checkbox" checked="" id="toggle-all"/>
+        <input type="checkbox" id="toggle-all" checked=""/>
         <label for="toggle-all">Mark all as complete</label>
         <ul id="todo-list">
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle"/>
+              <input type="checkbox" class="toggle" checked=""/>
               <label>Rename Cloact to Reagent</label>
               <button class="destroy"></button>
             </div>
           </li>
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle"/>
+              <input type="checkbox" class="toggle" checked=""/>
               <label>Add undo demo</label>
               <button class="destroy"></button>
             </div>
           </li>
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle"/>
+              <input type="checkbox" class="toggle" checked=""/>
               <label>Make all rendering async</label>
               <button class="destroy"></button>
             </div>
           </li>
           <li class="completed">
             <div class="view">
-              <input type="checkbox" checked="" class="toggle"/>
+              <input type="checkbox" class="toggle" checked=""/>
               <label>Allow any arguments to component functions</label>
               <button class="destroy"></button>
             </div>
@@ -1896,33 +1896,33 @@ return todoApp;`
         "    ", ['span.reserved', "</"], ['span.declaration', "header"], ['span.reserved', ">"], "\n",
         "    ", ['span.reserved', "<"], ['span.declaration', "div"], ['span.reserved', ">"], "\n",
         "      ", ['span.reserved', "<"], ['span.declaration', "section"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"main\""], ['span.reserved', ">"], "\n",
-        "        ", ['span.reserved', "<"], ['span.declaration', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.string', "\"\""], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"toggle-all\""], ['span.reserved', "/>"], "\n",
+        "        ", ['span.reserved', "<"], ['span.declaration', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"toggle-all\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.string', "\"\""], ['span.reserved', "/>"], "\n",
         "        ", ['span.reserved', "<"], ['span.declaration', "label"], " ", ['span.keyword', "for"], ['span.reserved', "="], ['span.string', "\"toggle-all\""], ['span.reserved', ">"], "Mark all as complete", ['span.reserved', "</"], ['span.declaration', "label"], ['span.reserved', ">"], "\n",
         "        ", ['span.reserved', "<"], ['span.declaration', "ul"], " ", ['span.keyword', "id"], ['span.reserved', "="], ['span.string', "\"todo-list\""], ['span.reserved', ">"], "\n",
         "          ", ['span.reserved', "<"], ['span.declaration', "li"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"completed\""], ['span.reserved', ">"], "\n",
         "            ", ['span.reserved', "<"], ['span.declaration', "div"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"view\""], ['span.reserved', ">"], "\n",
-        "              ", ['span.reserved', "<"], ['span.declaration', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.string', "\"\""], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"toggle\""], ['span.reserved', "/>"], "\n",
+        "              ", ['span.reserved', "<"], ['span.declaration', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"toggle\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.string', "\"\""], ['span.reserved', "/>"], "\n",
         "              ", ['span.reserved', "<"], ['span.declaration', "label"], ['span.reserved', ">"], "Rename Cloact to Reagent", ['span.reserved', "</"], ['span.declaration', "label"], ['span.reserved', ">"], "\n",
         "              ", ['span.reserved', "<"], ['span.declaration', "button"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"destroy\""], ['span.reserved', ">"], ['span.reserved', "</"], ['span.declaration', "button"], ['span.reserved', ">"], "\n",
         "            ", ['span.reserved', "</"], ['span.declaration', "div"], ['span.reserved', ">"], "\n",
         "          ", ['span.reserved', "</"], ['span.declaration', "li"], ['span.reserved', ">"], "\n",
         "          ", ['span.reserved', "<"], ['span.declaration', "li"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"completed\""], ['span.reserved', ">"], "\n",
         "            ", ['span.reserved', "<"], ['span.declaration', "div"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"view\""], ['span.reserved', ">"], "\n",
-        "              ", ['span.reserved', "<"], ['span.declaration', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.string', "\"\""], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"toggle\""], ['span.reserved', "/>"], "\n",
+        "              ", ['span.reserved', "<"], ['span.declaration', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"toggle\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.string', "\"\""], ['span.reserved', "/>"], "\n",
         "              ", ['span.reserved', "<"], ['span.declaration', "label"], ['span.reserved', ">"], "Add undo demo", ['span.reserved', "</"], ['span.declaration', "label"], ['span.reserved', ">"], "\n",
         "              ", ['span.reserved', "<"], ['span.declaration', "button"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"destroy\""], ['span.reserved', ">"], ['span.reserved', "</"], ['span.declaration', "button"], ['span.reserved', ">"], "\n",
         "            ", ['span.reserved', "</"], ['span.declaration', "div"], ['span.reserved', ">"], "\n",
         "          ", ['span.reserved', "</"], ['span.declaration', "li"], ['span.reserved', ">"], "\n",
         "          ", ['span.reserved', "<"], ['span.declaration', "li"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"completed\""], ['span.reserved', ">"], "\n",
         "            ", ['span.reserved', "<"], ['span.declaration', "div"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"view\""], ['span.reserved', ">"], "\n",
-        "              ", ['span.reserved', "<"], ['span.declaration', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.string', "\"\""], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"toggle\""], ['span.reserved', "/>"], "\n",
+        "              ", ['span.reserved', "<"], ['span.declaration', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"toggle\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.string', "\"\""], ['span.reserved', "/>"], "\n",
         "              ", ['span.reserved', "<"], ['span.declaration', "label"], ['span.reserved', ">"], "Make all rendering async", ['span.reserved', "</"], ['span.declaration', "label"], ['span.reserved', ">"], "\n",
         "              ", ['span.reserved', "<"], ['span.declaration', "button"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"destroy\""], ['span.reserved', ">"], ['span.reserved', "</"], ['span.declaration', "button"], ['span.reserved', ">"], "\n",
         "            ", ['span.reserved', "</"], ['span.declaration', "div"], ['span.reserved', ">"], "\n",
         "          ", ['span.reserved', "</"], ['span.declaration', "li"], ['span.reserved', ">"], "\n",
         "          ", ['span.reserved', "<"], ['span.declaration', "li"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"completed\""], ['span.reserved', ">"], "\n",
         "            ", ['span.reserved', "<"], ['span.declaration', "div"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"view\""], ['span.reserved', ">"], "\n",
-        "              ", ['span.reserved', "<"], ['span.declaration', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.string', "\"\""], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"toggle\""], ['span.reserved', "/>"], "\n",
+        "              ", ['span.reserved', "<"], ['span.declaration', "input"], " ", ['span.keyword', "type"], ['span.reserved', "="], ['span.string', "\"checkbox\""], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"toggle\""], " ", ['span.keyword', "checked"], ['span.reserved', "="], ['span.string', "\"\""], ['span.reserved', "/>"], "\n",
         "              ", ['span.reserved', "<"], ['span.declaration', "label"], ['span.reserved', ">"], "Allow any arguments to component functions", ['span.reserved', "</"], ['span.declaration', "label"], ['span.reserved', ">"], "\n",
         "              ", ['span.reserved', "<"], ['span.declaration', "button"], " ", ['span.keyword', "class"], ['span.reserved', "="], ['span.string', "\"destroy\""], ['span.reserved', ">"], ['span.reserved', "</"], ['span.declaration', "button"], ['span.reserved', ">"], "\n",
         "            ", ['span.reserved', "</"], ['span.declaration', "div"], ['span.reserved', ">"], "\n",

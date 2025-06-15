@@ -45,6 +45,7 @@ if (isDOM) {
 	r._init({...m, hyperscript: m});
 } else {
 	/* eslint-disable global-require */
+	Benchmark = require('benchmark');
 	global.window = require('./domMock')(); // borrowed from Mithril repo
 	global.document = window.document
 	// We're benchmarking renders, not our throttling.
@@ -53,7 +54,6 @@ if (isDOM) {
 	}
 	global.m = require('../node_modules/mithril/index.js')
 	global.rootElem = null
-	Benchmark = require('benchmark')
 	global.r = require('../reagent');
 	/* eslint-enable global-require */
 }
@@ -75,7 +75,7 @@ if (isDOM) {
 	Benchmark.options.delay = 1 / 30 /* frames per second */
 }
 
-var suite = new Benchmark.Suite("Mithril.js perf", {
+var suite = new Benchmark.Suite("mreframe perf", {
 	onStart: function () {
 		this.start = Date.now()
 	},

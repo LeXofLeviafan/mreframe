@@ -383,7 +383,7 @@ r.render([ui], document.getElementById('app')); // mount the application's ui in
 ```html
 <div>
   <h1>Hello world, it is now</h1>
-  <div style="color:#f88" class="example-clock">
+  <div class="example-clock" style="color:#f88">
     02:25:00
   </div>
   <div class="color-input">

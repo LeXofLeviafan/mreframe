@@ -284,12 +284,18 @@ module.exports = function(options) {
 					getPropertyValue: {value: function(key){
 						return style[key]
 					}},
-					removeProperty: {value: function(key){
-						style[key] = style[camelCase(key)] = ""
-					}},
-					setProperty: {value: function(key, value){
-						style[key] = style[camelCase(key)] = value
-					}}
+					removeProperty: {
+						writable: true,
+						value: function(key){
+							style[key] = style[camelCase(key)] = ""
+						}
+					},
+					setProperty: {
+						writable: true,
+						value: function(key, value){
+							style[key] = style[camelCase(key)] = value
+						}
+					}
 				})
 				var events = {}
 				var element = {
@@ -307,6 +313,7 @@ module.exports = function(options) {
 					parentNode: null,
 					childNodes: [],
 					attributes: {},
+					ownerDocument: $window.document,
 					contains: function(child) {
 						while (child != null) {
 							if (child === this) return true
@@ -346,9 +353,8 @@ module.exports = function(options) {
 					get style() {
 						return style
 					},
-					set style(_){
-						// https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/style#Setting_style
-						throw new Error("setting element.style is not portable")
+					set style(value){
+						this.style.cssText = value
 					},
 					get className() {
 						return this.attributes["class"] ? this.attributes["class"].value : ""
@@ -718,6 +724,7 @@ module.exports = function(options) {
 			},
 			createDocumentFragment: function() {
 				return {
+					ownerDocument: $window.document,
 					nodeType: 11,
 					nodeName: "#document-fragment",
 					appendChild: appendChild,
@@ -739,6 +746,7 @@ module.exports = function(options) {
 			get activeElement() {return activeElement},
 		},
 	}
+	$window.document.defaultView = $window
 	$window.document.documentElement = $window.document.createElement("html")
 	appendChild.call($window.document.documentElement, $window.document.createElement("head"))
 	$window.document.body = $window.document.createElement("body")
