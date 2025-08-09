@@ -440,6 +440,11 @@ o.spec "mreframe/re-frame", ->
     $assocIn ['answer'], 42
     o(deref fooSub).equals($db().foo)			"deref after db changed returns current db value"
     o(foo.callCount).equals(4)				"deref after db change triggers sub calculation"
+    msg = "re-frame: invalid signals specified for subscription 'qux'"
+    o(-> rf.regSub 'qux', "invalid signals", ->)
+      .throws(SyntaxError)				"regSub with invalid signals argument raises a SyntaxError"
+    o(-> rf.regSub 'qux', '<-', ['foo'], '<-', ->)
+      .throws(msg)					"error for invalid signals argument indicates subscription name"
     $assocIn ['baz', 'bar'], 'foo'
     get = o.spy getIn
     len = o.spy (s) -> s.length
@@ -656,5 +661,44 @@ o.spec "mreframe/re-frame", ->
       o(log.callCount).equals(1)
       delay()
     .then ->
-      o(log.callCount).equals(2)			"procesed onFailure"
+      o(log.callCount).equals(2)			"processed onFailure"
       o(log.args[0]).deepEquals([42, "oops"])		"passed onFailure values"
+
+  o "namespace + inNamespace()", ->
+    rf1 = rf.inNamespace 'my-ns'
+    o(rf).notEquals(rf1)				"inNamespace() spawns a new object"
+    o(rf.namespace).equals('')				"base namespace (unchanged)"
+    o(rf1.namespace).equals('my-ns')			"new namespace"
+    o(rf.inNamespace '').equals(rf)			"using '' as namespace returns base reFrame object"
+    o(rf.inNamespace 'my-ns').equals(rf1)		"reusing existing namespace returns the same object"
+    o(rf1._init).equals(undefined)			"namespaces other than '' do not have _init()"
+    rf.regEventDb 'init', [rf.unwrap], (_, data) => data
+    rf1.regEventDb 'init', (_, evt) => evt
+    o(console.warn.callCount).equals(0)			"no collision occurred for regEventDb()"
+    rf.dispatchSync ['init', {foo: 1, bar: 2}]
+    rf1.dispatchSync ['init', {foo: 'a', bar: 'b'}]
+    rf.regSub 'db', (db) => db
+    rf1.regSub 'db', (db) => {db}
+    o(console.warn.callCount).equals(0)			"no collision occurred for regSub()"
+    o(rf.dsub ['db']).deepEquals({foo: 1, bar: 2})	"resolving query for default reFrame object"
+    o(rf1.dsub ['db'])
+      .deepEquals(db: ['init', {foo: 'a', bar: 'b'}])	"resolving same query for the namespace"
+    rf.regSub 'db', (db) -> {db}
+    o(console.warn.callCount).equals(1)			"introduced a collision in base subscriptions"
+    msg = "re-frame: overwriting subscription handler for: 'db'"
+    o(console.warn.args[0]).equals(msg)			"error message when overwriting base subscription"
+    rf1.regSub 'db', (db) -> db
+    o(console.warn.callCount).equals(2)			"introduced a collision in namespace subscriptions"
+    msg1 = "re-frame[my-ns]: overwriting subscription handler for: 'db'"
+    o(console.warn.args[0]).equals(msg1)		"error message when overwriting namespace subscription"
+    o(rf.subscribe ['foo']).equals(undefined)		"accessing nonexistent base subscription"
+    o(console.error.callCount).equals(1)		"error was printed for nonexistent base subscription"
+    msg = "re-frame: no subscription handler registered for: 'foo'"
+    o(console.error.args[0]).equals(msg)		"error message for nonexistent base subscription"
+    o(rf1.subscribe ['foo']).equals(undefined)		"accessing nonexistent namespace subscription"
+    o(console.error.callCount).equals(2)		"error was printed for nonexistent namespace subscription"
+    msg1 = "re-frame[my-ns]: no subscription handler registered for: 'foo'"
+    o(console.error.args[0]).equals(msg1)		"error message for nonexistent namespace subscription"
+    msg = "re-frame[my-ns]: invalid signals specified for subscription 'foo'"
+    o(-> rf1.regSub 'foo', '<-', 'db', ->)
+      .throws(msg)					"error for invalid signals argument indicates namespace"

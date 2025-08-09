@@ -67,17 +67,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
 },{"./reagent":"mreframe/reagent"}],"mreframe/re-frame":[function(require,module,exports){
 (function() {
-
-  /*
-    Context structure:
-    {:coeffects {:event [:some-id :some-param]
-                 :db    "original contents of app-db"}
-     :effects   {:db    "new value for app-db>"
-                 :dispatch  [:an-event-id :param1]}
-     :queue     "a collection of further interceptors"
-     :stack     "a collection of interceptors already walked"}
-  */
-  var _calcSignals, _calcSub, _clear, _ctxEvt, _cursors, _deref, _dispatch, _duplicate, _effects, _eq_, _eventQueue, _fx, _getDb, _getX, _initReagent, _intercept, _invalidSignals, _noHandler, _pathKey, _replaceEvent, _restoreEvent, _signals, _subscriptionCache, appDb, assoc, assocCoeffect, assocEffect, assocIn, atom, chain, chunks, clearEvent, coeffects, cursor, deref, dict, dispatch, dispatchSync, dissoc, effects, entries, eq, eqShallow, events, flatten, getCoeffect, getEffect, getIn, identical, identity, isArray, isDict, isFn, keys, merge, ratom, regEventCtx, regEventFx, repr, reset, subscribe, subscriptions, swap, toInterceptor, update,
+  var _eq_, _init, _initReagent, _namespaces, assoc, assocIn, atom, chain, chunks, cursor, deref, dict, dissoc, entries, eq, eqShallow, flatten, getIn, identical, identity, inNamespace, isArray, isDict, isFn, keys, merge, ratom, repr, reset, swap, update,
     splice = [].splice;
 
   ({identical, eq, eqShallow, keys, dict, entries, isArray, isDict, isFn, getIn, merge, assoc, assocIn, dissoc, update, repr, identity, chunks, flatten, chain} = require('./util'));
@@ -90,471 +80,438 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
     cursor
   } = require('./reagent'));
 
-  _eq_ = eq;
+  [_eq_, _namespaces] = [eq, new Map()];
 
-  exports._init = (opts) => {
+  _init = (opts) => {
     _initReagent(opts);
     _eq_ = (opts != null ? opts.eq : void 0) || _eq_;
     return void 0;
   };
 
-  /* Application state atom */
-  exports.appDb = appDb = ratom({});
-
-  events = atom({});
-
-  effects = atom({});
-
-  coeffects = atom({});
-
-  subscriptions = atom({});
-
-  _noHandler = (kind, [key]) => {
-    return console.error(`re-frame: no ${kind} handler registered for: '${key}'`);
-  };
-
-  _duplicate = (kind, key) => {
-    return console.warn(`re-frame: overwriting ${kind} handler for: '${key}'`);
-  };
-
-  _subscriptionCache = new Map();
-
-  /* Removes cached subscriptions (forcing to recalculate) */
-  exports.clearSubscriptionCache = () => {
-    return _subscriptionCache.clear();
-  };
-
-  _eventQueue = new Set();
-
-  /* Cancels all scheduled events */
-  exports.purgeEventQueue = () => {
-    _eventQueue.forEach(clearTimeout);
-    return _eventQueue.clear();
-  };
-
-  _clear = (atom) => {
-    return (id) => {
-      if (id) {
-        swap(atom, dissoc, id);
-      } else {
-        reset(atom, {});
+  inNamespace = (namespace = '') => {
+    /*
+      Context structure:
+      {:coeffects {:event [:some-id :some-param]
+                   :db    "original contents of app-db"}
+       :effects   {:db    "new value for app-db>"
+                   :dispatch  [:an-event-id :param1]}
+       :queue     "a collection of further interceptors"
+       :stack     "a collection of interceptors already walked"}
+    */
+    var _calcSignals, _calcSub, _clear, _ctxEvt, _cursors, _deref, _dispatch, _duplicate, _effects, _eventQueue, _exports, _fx, _getDb, _getX, _intercept, _invalidSignals, _noHandler, _ns, _pathKey, _replaceEvent, _restoreEvent, _signals, _subscriptionCache, appDb, assocCoeffect, assocEffect, clearEvent, coeffects, dispatch, dispatchSync, effects, events, getCoeffect, getEffect, regEventCtx, regEventFx, subscribe, subscriptions, toInterceptor;
+    if (_namespaces.has(namespace)) {
+      return _namespaces.get(namespace);
+    }
+    [_exports, _ns] = [{namespace, inNamespace}, (!namespace ? "" : `[${namespace}]`)];
+    _namespaces.set(namespace, _exports);
+    /* Application state atom */
+    _exports.appDb = appDb = ratom({});
+    events = atom({});
+    effects = atom({});
+    coeffects = atom({});
+    subscriptions = atom({});
+    _noHandler = (kind, [key]) => {
+      return console.error(`re-frame${_ns}: no ${kind} handler registered for: '${key}'`);
+    };
+    _duplicate = (kind, key) => {
+      return console.warn(`re-frame${_ns}: overwriting ${kind} handler for: '${key}'`);
+    };
+    _subscriptionCache = new Map();
+    /* Removes cached subscriptions (forcing to recalculate) */
+    _exports.clearSubscriptionCache = () => {
+      return _subscriptionCache.clear();
+    };
+    _eventQueue = new Set();
+    /* Cancels all scheduled events */
+    _exports.purgeEventQueue = () => {
+      _eventQueue.forEach(clearTimeout);
+      return _eventQueue.clear();
+    };
+    _clear = (atom) => {
+      return (id) => {
+        if (id) {
+          swap(atom, dissoc, id);
+        } else {
+          reset(atom, {});
+        }
+        return void 0;
+      };
+    };
+    _invalidSignals = (key) => {
+      throw SyntaxError(`re-frame${_ns}: invalid signals specified for subscription '${key}'`);
+    };
+    _signals = (id, signals) => {
+      var queries;
+      if (!signals.every(([k, q]) => {
+        return (k === '<-') && isArray(q);
+      })) {
+        _invalidSignals(id);
       }
+      queries = signals.map((kq) => {
+        return kq[1];
+      });
+      if (queries.length === 1) {
+        return () => {
+          return subscribe(queries[0]);
+        };
+      } else {
+        return () => {
+          return queries.map(subscribe);
+        };
+      }
+    };
+    _deref = (ratom) => {
+      return ratom._deref(); // parent ratom is not to be propagated
+    };
+    _calcSignals = (signals) => {
+      if (isArray(signals)) {
+        return signals.map(_deref);
+      } else if (!isDict(signals)) {
+        return _deref(signals);
+      } else {
+        return dict(entries(signals).map(([k, v]) => {
+          return [k, _deref(v)];
+        }));
+      }
+    };
+    /* Registers a subscription function to compute view data */
+    _exports.regSub = (id, ...signals) => {
+      var computation, ref;
+      ref = signals, [...signals] = ref, [computation] = splice.call(signals, -1);
+      signals = signals.length === 0 ? () => {
+        return appDb;
+      } : signals.length !== 1 ? _signals(id, chunks(signals, 2)) : isFn(signals[0]) ? signals[0] : _invalidSignals(id);
+      if ((deref(subscriptions))[id]) {
+        _duplicate("subscription", id);
+      }
+      swap(subscriptions, assoc, id, [signals, computation]);
       return void 0;
     };
-  };
-
-  _invalidSignals = () => {
-    throw SyntaxError("re-frame: invalid subscription signals");
-  };
-
-  _signals = (signals) => {
-    var queries;
-    if (!signals.every(([k, q]) => {
-      return (k === '<-') && isArray(q);
-    })) {
-      _invalidSignals();
-    }
-    queries = signals.map((kq) => {
-      return kq[1];
-    });
-    if (queries.length === 1) {
-      return () => {
-        return subscribe(queries[0]);
-      };
-    } else {
-      return () => {
-        return queries.map(subscribe);
-      };
-    }
-  };
-
-  _deref = (ratom) => {
-    return ratom._deref(); // parent ratom is not to be propagated
-  };
-
-  _calcSignals = (signals) => {
-    if (isArray(signals)) {
-      return signals.map(_deref);
-    } else if (!isDict(signals)) {
-      return _deref(signals);
-    } else {
-      return dict(entries(signals).map(([k, v]) => {
-        return [k, _deref(v)];
-      }));
-    }
-  };
-
-  /* Registers a subscription function to compute view data */
-  exports.regSub = (id, ...signals) => {
-    var computation, ref;
-    ref = signals, [...signals] = ref, [computation] = splice.call(signals, -1);
-    signals = signals.length === 0 ? () => {
-      return appDb;
-    } : signals.length !== 1 ? _signals(chunks(signals, 2)) : isFn(signals[0]) ? signals[0] : _invalidSignals();
-    if ((deref(subscriptions))[id]) {
-      _duplicate("subscription", id);
-    }
-    swap(subscriptions, assoc, id, [signals, computation]);
-    return void 0;
-  };
-
-  _calcSub = (signals, computation) => {
-    return (query) => {
-      var input, input_, key, output, x;
-      input = _calcSignals(signals(query));
-      if (_subscriptionCache.has(key = repr(query))) {
-        [input_, output] = _subscriptionCache.get(key);
-        if (eqShallow(input, input_)) {
-          return output;
+    _calcSub = (signals, computation) => {
+      return (query) => {
+        var input, input_, key, output, x;
+        input = _calcSignals(signals(query));
+        if (_subscriptionCache.has(key = repr(query))) {
+          [input_, output] = _subscriptionCache.get(key);
+          if (eqShallow(input, input_)) {
+            return output;
+          }
         }
-      }
-      x = computation(input, query);
-      _subscriptionCache.set(key, [input, x]);
-      return x;
-    };
-  };
-
-  _cursors = new Map();
-
-  /* Returns an RCursor that derefs to subscription result (or cached value) */
-  exports.subscribe = subscribe = (query) => {
-    var it, key;
-    if (!(it = (deref(subscriptions))[query[0]])) {
-      return _noHandler("subscription", query);
-    } else {
-      if (!_cursors.has(key = repr(query))) {
-        _cursors.set(key, cursor(_calcSub(...it), query));
-      }
-      return _cursors.get(key);
-    }
-  };
-
-  /* Unregisters one or all subscription functions */
-  exports.clearSub = ((_clearSubs) => {
-    return (id) => {
-      id || _cursors.clear();
-      return _clearSubs(id);
-    };
-  })(_clear(subscriptions));
-
-  /*
-    Produces an interceptor (changed from varargs to options object).
-
-    Interceptor structure:
-    {:id      :something             ;; decorative only - can be ignored
-     :before  (fn [context] ...)     ;; returns a possibly modified `context`
-     :after   (fn [context] ...)}    ;; returns a possibly modified `context`
-  */
-  exports.toInterceptor = toInterceptor = (args) => {
-    return {
-      id: args != null ? args.id : void 0,
-      before: (args != null ? args.before : void 0) || identity,
-      after: (args != null ? args.after : void 0) || identity
-    };
-  };
-
-  _getX = (x, key, notFound) => {
-    if (!key) {
-      return x;
-    } else if (key in (x || {})) {
-      return x[key];
-    } else {
-      return notFound;
-    }
-  };
-
-  /* Returns context coeffects or specified coeffect */
-  exports.getCoeffect = getCoeffect = (context, key, notFound) => {
-    return _getX(context.coeffects, key, notFound);
-  };
-
-  /* Returns context effects or specified effect */
-  exports.getEffect = getEffect = (context, key, notFound) => {
-    return _getX(context.effects, key, notFound);
-  };
-
-  /* Produces a copy of the context with added coeffect */
-  exports.assocCoeffect = assocCoeffect = (context, key, value) => {
-    return assocIn(context, ['coeffects', key], value);
-  };
-
-  /* Produces a copy of the context with added effect */
-  exports.assocEffect = assocEffect = (context, key, value) => {
-    return assocIn(context, ['effects', key], value);
-  };
-
-  /* Produces a copy of the context with interceptors added to the queue */
-  exports.enqueue = (context, interceptors) => {
-    return update(context, 'queue', (xs) => {
-      return [...xs, ...interceptors];
-    });
-  };
-
-  _getDb = (context) => {
-    return getEffect(context, 'db', getCoeffect(context, 'db'));
-  };
-
-  _pathKey = 're-frame-path/db-store';
-
-  /* Produces an interceptor which switches out db for its subpath */
-  exports.path = (...path) => {
-    return toInterceptor({
-      id: 'path',
-      before: (context) => {
-        var db, dbs;
-        db = getCoeffect(context, 'db');
-        dbs = [...(context[_pathKey] || []), db];
-        return chain(context, [assoc, _pathKey, dbs], [assocCoeffect, 'db', getIn(db, flatten(path))]);
-      },
-      after: (context) => {
-        var db, dbs, ref;
-        ref = context[_pathKey], [...dbs] = ref, [db] = splice.call(dbs, -1);
-        return chain(context, [assoc, _pathKey, dbs], [assocEffect, 'db', assocIn(db, flatten(path), _getDb(context))], [assocCoeffect, 'db', db]);
-      }
-    });
-  };
-
-  /* Produces an interceptor which updates db effect after the event handler */
-  exports.enrich = (f) => {
-    return toInterceptor({
-      id: 'enrich',
-      after: (context) => {
-        return assocEffect(context, 'db', f(_getDb(context), getCoeffect(context, 'event')));
-      }
-    });
-  };
-
-  _replaceEvent = (f) => {
-    return (context) => {
-      var event;
-      event = getCoeffect(context, 'event');
-      return chain(context, [assocCoeffect, 'originalEvent', event], [assocCoeffect, 'event', f(event)]);
-    };
-  };
-
-  _restoreEvent = (context) => {
-    return assocCoeffect(context, 'event', getCoeffect(context, 'originalEvent'));
-  };
-
-  /* An interceptor switches out event for its 1st parameter */
-  exports.unwrap = toInterceptor({
-    id: 'unwrap',
-    after: _restoreEvent,
-    before: _replaceEvent((event) => {
-      return event[1];
-    })
-  });
-
-  /* An interceptor switches out event for its parameters */
-  exports.trimV = toInterceptor({
-    id: 'trim-v',
-    after: _restoreEvent,
-    before: _replaceEvent((event) => {
-      return event.slice(1);
-    })
-  });
-
-  /* Produces an interceptor which updates runs an action on db/event after the event handler */
-  exports.after = (f) => {
-    return toInterceptor({
-      id: 'after',
-      after: (context) => {
-        f(_getDb(context), getCoeffect(context, 'event'));
-        return context;
-      }
-    });
-  };
-
-  /* Produces an interceptor which recalculates db subpath if input subpaths changed */
-  exports.onChanges = (f, outPath, ...inPaths) => {
-    return toInterceptor({
-      id: 'on-changes',
-      after: (context) => {
-        var db0, db1, ins, outs;
-        db0 = getCoeffect(context, 'db');
-        db1 = _getDb(context);
-        [ins, outs] = [db0, db1].map((db) => {
-          return inPaths.map((path) => {
-            return getIn(db, path);
-          });
-        });
-        if (outs.every((x, i) => {
-          return identical(x, ins[i]);
-        })) {
-          return context;
-        } else {
-          return assocEffect(context, 'db', assocIn(db1, outPath, f(...outs)));
-        }
-      }
-    });
-  };
-
-  /* Registers a coeffect handler (for use as an interceptor) */
-  exports.regCofx = (id, handler) => {
-    if ((deref(coeffects))[id]) {
-      _duplicate("coeffect", id);
-    }
-    swap(coeffects, assoc, id, handler);
-    return void 0;
-  };
-
-  /* Produces an interceptor which applies a coeffect handler before the event handler */
-  exports.injectCofx = (key, arg) => {
-    return toInterceptor({
-      id: key,
-      before: (context) => {
-        var it;
-        if ((it = (deref(coeffects))[key])) {
-          return update(context, 'coeffects', (deref(coeffects))[key], arg);
-        } else {
-          _noHandler("coeffect", [key]);
-          return context;
-        }
-      }
-    });
-  };
-
-  /* Unregisters one or all coeffect handlers */
-  exports.clearCofx = _clear(coeffects);
-
-  /* Registers an event handler which calculates new application state from the old one */
-  exports.regEventDb = (id, interceptors, handler) => {
-    if (!handler) {
-      [interceptors, handler] = [[], interceptors];
-    }
-    return regEventFx(id, interceptors, (cofx, query) => {
-      return {
-        db: handler(cofx.db, query)
+        x = computation(input, query);
+        _subscriptionCache.set(key, [input, x]);
+        return x;
       };
-    });
-  };
-
-  _ctxEvt = (handler) => {
-    return (context) => {
-      return merge(context, {
-        effects: handler(getCoeffect(context), getCoeffect(context, 'event'))
-      });
     };
-  };
-
-  /* Registers an event handler which calculates effects from coeffects */
-  exports.regEventFx = regEventFx = (id, interceptors, handler) => {
-    if (!handler) {
-      [interceptors, handler] = [[], interceptors];
-    }
-    return regEventCtx(id, interceptors, _ctxEvt(handler));
-  };
-
-  /* Registers an event handler which arbitrarily updates the context */
-  exports.regEventCtx = regEventCtx = (id, interceptors, handler) => {
-    if (!handler) {
-      [interceptors, handler] = [[], interceptors];
-    }
-    if ((deref(events))[id]) {
-      _duplicate("event", id);
-    }
-    swap(events, assoc, id, [flatten(interceptors.filter(identity)), handler]);
-    return void 0;
-  };
-
-  /* Unregisters one or all event handlers */
-  exports.clearEvent = clearEvent = _clear(events);
-
-  _intercept = (context, hook) => { // every step is dynamic so no chains, folds or for-loops
-    var x, xs;
-    context = merge(context, {
-      stack: [],
-      queue: context.stack
-    });
-    while (context.queue.length > 0) {
-      [x, ...xs] = context.queue;
-      context = x[hook](merge(context, {
-        queue: xs
-      }));
-      context = merge(context, {
-        stack: [x, ...context.stack]
-      });
-    }
-    return context;
-  };
-
-  /* Dispatches an event (running back and forth through interceptor chain & handler then actions effects) */
-  exports.dispatchSync = dispatchSync = (event) => {
-    var context, handler, it, stack;
-    if (!(it = (deref(events))[event[0]])) {
-      return _noHandler("event", event);
-    } else {
-      [stack, handler] = it;
-      context = {
-        stack,
-        coeffects: {
-          event,
-          db: _deref(appDb)
-        }
-      };
-      return chain(context, [_intercept, 'before'], handler, [_intercept, 'after'], getEffect, entries, _fx);
-    }
-  };
-
-  _dispatch = ({ms, dispatch}) => {
-    var id;
-    _eventQueue.add(id = setTimeout((() => {
-      _eventQueue.delete(id);
-      return dispatchSync(dispatch);
-    }), ms));
-    return id;
-  };
-
-  /* Schedules dispatching of an event */
-  exports.dispatch = dispatch = (dispatch) => {
-    return _dispatch({dispatch});
-  };
-
-  _fx = (fxs, fx = deref(effects)) => {
-    return fxs.filter(identity).forEach(([k, v]) => {
-      var it;
-      if ((it = fx[k] || _effects[k])) {
-        return it(v);
+    _cursors = new Map();
+    /* Returns an RCursor that derefs to subscription result (or cached value) */
+    _exports.subscribe = subscribe = (query) => {
+      var it, key;
+      if (!(it = (deref(subscriptions))[query[0]])) {
+        return _noHandler("subscription", query);
       } else {
-        return _noHandler("effect", [k]);
+        if (!_cursors.has(key = repr(query))) {
+          _cursors.set(key, cursor(_calcSub(...it), query));
+        }
+        return _cursors.get(key);
       }
+    };
+    /* Unregisters one or all subscription functions */
+    _exports.clearSub = ((_clearSubs) => {
+      return (id) => {
+        id || _cursors.clear();
+        return _clearSubs(id);
+      };
+    })(_clear(subscriptions));
+    /*
+      Produces an interceptor (changed from varargs to options object).
+
+      Interceptor structure:
+      {:id      :something             ;; decorative only - can be ignored
+       :before  (fn [context] ...)     ;; returns a possibly modified `context`
+       :after   (fn [context] ...)}    ;; returns a possibly modified `context`
+    */
+    _exports.toInterceptor = toInterceptor = (args) => {
+      return {
+        id: args != null ? args.id : void 0,
+        before: (args != null ? args.before : void 0) || identity,
+        after: (args != null ? args.after : void 0) || identity
+      };
+    };
+    _getX = (x, key, notFound) => {
+      if (!key) {
+        return x;
+      } else if (key in (x || {})) {
+        return x[key];
+      } else {
+        return notFound;
+      }
+    };
+    /* Returns context coeffects or specified coeffect */
+    _exports.getCoeffect = getCoeffect = (context, key, notFound) => {
+      return _getX(context.coeffects, key, notFound);
+    };
+    /* Returns context effects or specified effect */
+    _exports.getEffect = getEffect = (context, key, notFound) => {
+      return _getX(context.effects, key, notFound);
+    };
+    /* Produces a copy of the context with added coeffect */
+    _exports.assocCoeffect = assocCoeffect = (context, key, value) => {
+      return assocIn(context, ['coeffects', key], value);
+    };
+    /* Produces a copy of the context with added effect */
+    _exports.assocEffect = assocEffect = (context, key, value) => {
+      return assocIn(context, ['effects', key], value);
+    };
+    /* Produces a copy of the context with interceptors added to the queue */
+    _exports.enqueue = (context, interceptors) => {
+      return update(context, 'queue', (xs) => {
+        return [...xs, ...interceptors];
+      });
+    };
+    _getDb = (context) => {
+      return getEffect(context, 'db', getCoeffect(context, 'db'));
+    };
+    _pathKey = 're-frame-path/db-store';
+    /* Produces an interceptor which switches out db for its subpath */
+    _exports.path = (...path) => {
+      return toInterceptor({
+        id: 'path',
+        before: (context) => {
+          var db, dbs;
+          db = getCoeffect(context, 'db');
+          dbs = [...(context[_pathKey] || []), db];
+          return chain(context, [assoc, _pathKey, dbs], [assocCoeffect, 'db', getIn(db, flatten(path))]);
+        },
+        after: (context) => {
+          var db, dbs, ref;
+          ref = context[_pathKey], [...dbs] = ref, [db] = splice.call(dbs, -1);
+          return chain(context, [assoc, _pathKey, dbs], [assocEffect, 'db', assocIn(db, flatten(path), _getDb(context))], [assocCoeffect, 'db', db]);
+        }
+      });
+    };
+    /* Produces an interceptor which updates db effect after the event handler */
+    _exports.enrich = (f) => {
+      return toInterceptor({
+        id: 'enrich',
+        after: (context) => {
+          return assocEffect(context, 'db', f(_getDb(context), getCoeffect(context, 'event')));
+        }
+      });
+    };
+    _replaceEvent = (f) => {
+      return (context) => {
+        var event;
+        event = getCoeffect(context, 'event');
+        return chain(context, [assocCoeffect, 'originalEvent', event], [assocCoeffect, 'event', f(event)]);
+      };
+    };
+    _restoreEvent = (context) => {
+      return assocCoeffect(context, 'event', getCoeffect(context, 'originalEvent'));
+    };
+    /* An interceptor switches out event for its 1st parameter */
+    _exports.unwrap = toInterceptor({
+      id: 'unwrap',
+      after: _restoreEvent,
+      before: _replaceEvent((event) => {
+        return event[1];
+      })
+    });
+    /* An interceptor switches out event for its parameters */
+    _exports.trimV = toInterceptor({
+      id: 'trim-v',
+      after: _restoreEvent,
+      before: _replaceEvent((event) => {
+        return event.slice(1);
+      })
+    });
+    /* Produces an interceptor which updates runs an action on db/event after the event handler */
+    _exports.after = (f) => {
+      return toInterceptor({
+        id: 'after',
+        after: (context) => {
+          f(_getDb(context), getCoeffect(context, 'event'));
+          return context;
+        }
+      });
+    };
+    /* Produces an interceptor which recalculates db subpath if input subpaths changed */
+    _exports.onChanges = (f, outPath, ...inPaths) => {
+      return toInterceptor({
+        id: 'on-changes',
+        after: (context) => {
+          var db0, db1, ins, outs;
+          db0 = getCoeffect(context, 'db');
+          db1 = _getDb(context);
+          [ins, outs] = [db0, db1].map((db) => {
+            return inPaths.map((path) => {
+              return getIn(db, path);
+            });
+          });
+          if (outs.every((x, i) => {
+            return identical(x, ins[i]);
+          })) {
+            return context;
+          } else {
+            return assocEffect(context, 'db', assocIn(db1, outPath, f(...outs)));
+          }
+        }
+      });
+    };
+    /* Registers a coeffect handler (for use as an interceptor) */
+    _exports.regCofx = (id, handler) => {
+      if ((deref(coeffects))[id]) {
+        _duplicate("coeffect", id);
+      }
+      swap(coeffects, assoc, id, handler);
+      return void 0;
+    };
+    /* Produces an interceptor which applies a coeffect handler before the event handler */
+    _exports.injectCofx = (key, arg) => {
+      return toInterceptor({
+        id: key,
+        before: (context) => {
+          var it;
+          if ((it = (deref(coeffects))[key])) {
+            return update(context, 'coeffects', (deref(coeffects))[key], arg);
+          } else {
+            _noHandler("coeffect", [key]);
+            return context;
+          }
+        }
+      });
+    };
+    /* Unregisters one or all coeffect handlers */
+    _exports.clearCofx = _clear(coeffects);
+    /* Registers an event handler which calculates new application state from the old one */
+    _exports.regEventDb = (id, interceptors, handler) => {
+      if (!handler) {
+        [interceptors, handler] = [[], interceptors];
+      }
+      return regEventFx(id, interceptors, (cofx, query) => {
+        return {
+          db: handler(cofx.db, query)
+        };
+      });
+    };
+    _ctxEvt = (handler) => {
+      return (context) => {
+        return merge(context, {
+          effects: handler(getCoeffect(context), getCoeffect(context, 'event'))
+        });
+      };
+    };
+    /* Registers an event handler which calculates effects from coeffects */
+    _exports.regEventFx = regEventFx = (id, interceptors, handler) => {
+      if (!handler) {
+        [interceptors, handler] = [[], interceptors];
+      }
+      return regEventCtx(id, interceptors, _ctxEvt(handler));
+    };
+    /* Registers an event handler which arbitrarily updates the context */
+    _exports.regEventCtx = regEventCtx = (id, interceptors, handler) => {
+      if (!handler) {
+        [interceptors, handler] = [[], interceptors];
+      }
+      if ((deref(events))[id]) {
+        _duplicate("event", id);
+      }
+      swap(events, assoc, id, [flatten(interceptors.filter(identity)), handler]);
+      return void 0;
+    };
+    /* Unregisters one or all event handlers */
+    _exports.clearEvent = clearEvent = _clear(events);
+    _intercept = (context, hook) => { // every step is dynamic so no chains, folds or for-loops
+      var x, xs;
+      context = merge(context, {
+        stack: [],
+        queue: context.stack
+      });
+      while (context.queue.length > 0) {
+        [x, ...xs] = context.queue;
+        context = x[hook](merge(context, {
+          queue: xs
+        }));
+        context = merge(context, {
+          stack: [x, ...context.stack]
+        });
+      }
+      return context;
+    };
+    /* Dispatches an event (running back and forth through interceptor chain & handler then actions effects) */
+    _exports.dispatchSync = dispatchSync = (event) => {
+      var context, handler, it, stack;
+      if (!(it = (deref(events))[event[0]])) {
+        return _noHandler("event", event);
+      } else {
+        [stack, handler] = it;
+        context = {
+          stack,
+          coeffects: {
+            event,
+            db: _deref(appDb)
+          }
+        };
+        return chain(context, [_intercept, 'before'], handler, [_intercept, 'after'], getEffect, entries, _fx);
+      }
+    };
+    _dispatch = ({ms, dispatch}) => {
+      var id;
+      _eventQueue.add(id = setTimeout((() => {
+        _eventQueue.delete(id);
+        return dispatchSync(dispatch);
+      }), ms));
+      return id;
+    };
+    /* Schedules dispatching of an event */
+    _exports.dispatch = dispatch = (dispatch) => {
+      return _dispatch({dispatch});
+    };
+    _fx = (fxs, fx = deref(effects)) => {
+      return fxs.filter(identity).forEach(([k, v]) => {
+        var it;
+        if ((it = fx[k] || _effects[k])) {
+          return it(v);
+        } else {
+          return _noHandler("effect", [k]);
+        }
+      });
+    };
+    _effects = { // builtin effects
+      db: (value) => {
+        if (!_eq_(value, _deref(appDb))) {
+          return reset(appDb, value);
+        }
+      },
+      fx: _fx,
+      dispatchLater: _dispatch,
+      dispatch: (dispatch) => {
+        return _dispatch({dispatch});
+      }
+    };
+    /* Registers an effect handler (implementation of a side-effect) */
+    _exports.regFx = (id, handler) => {
+      if ((deref(effects))[id]) {
+        _duplicate("effect", id);
+      }
+      swap(effects, assoc, id, handler);
+      return void 0;
+    };
+    /* Unregisters one or all effect handlers (excepting builtin ones) */
+    _exports.clearFx = _clear(effects);
+    /* Convenience function (for JS); returns deref'ed result of a subscription */
+    _exports.dsub = (query) => {
+      return deref(subscribe(query));
+    };
+    /* Convenience function (for fx); schedules dispatching an event (if present) with additional parameters */
+    _exports.disp = (evt, ...args) => {
+      return evt && dispatch([...evt, ...args]);
+    };
+    return Object.defineProperty(_exports, 'namespace', {
+      value: namespace // read-only (just in case)
     });
   };
 
-  _effects = { // builtin effects
-    db: (value) => {
-      if (!_eq_(value, _deref(appDb))) {
-        return reset(appDb, value);
-      }
-    },
-    fx: _fx,
-    dispatchLater: _dispatch,
-    dispatch: (dispatch) => {
-      return _dispatch({dispatch});
-    }
-  };
-
-  /* Registers an effect handler (implementation of a side-effect) */
-  exports.regFx = (id, handler) => {
-    if ((deref(effects))[id]) {
-      _duplicate("effect", id);
-    }
-    swap(effects, assoc, id, handler);
-    return void 0;
-  };
-
-  /* Unregisters one or all effect handlers (excepting builtin ones) */
-  exports.clearFx = _clear(effects);
-
-  /* Convenience function (for JS); returns deref'ed result of a subscription */
-  exports.dsub = (query) => {
-    return deref(subscribe(query));
-  };
-
-  /* Convenience function (for fx); schedules dispatching an event (if present) with additional parameters */
-  exports.disp = (evt, ...args) => {
-    return evt && dispatch([...evt, ...args]);
-  };
+  module.exports = Object.assign(inNamespace(''), {_init});
 
 }).call(this);
 
@@ -1135,7 +1092,7 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
 },{}],"mreframe":[function(require,module,exports){
 (function() {
-  var _init, atom, exports, reFrame, reagent, util;
+  var _init, atom, exports, ns, reFrame, reagent, util;
 
   util = require('./util');
 
@@ -1143,9 +1100,27 @@ require=(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=
 
   reagent = require('./reagent');
 
-  ({_init} = reFrame = require('./re-frame'));
+  ({
+    _init,
+    inNamespace: ns
+  } = reFrame = require('./re-frame'));
 
-  exports = {util, atom, reagent, reFrame, _init};
+  exports = {
+    util,
+    atom,
+    reagent,
+    reFrame,
+    _init,
+    inNamespace: (namespace) => {
+      return {
+        util,
+        atom,
+        reagent,
+        _init,
+        reFrame: ns(namespace)
+      };
+    }
+  };
 
   module.exports = exports; // preventing removal by tree-shaking
 

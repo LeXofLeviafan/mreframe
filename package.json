@@ -1,6 +1,6 @@
 {
   "name": "mreframe",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "A reagent/re-frame imitation that uses Mithril instead",
   "main": "index.js",
   "author": "LeXofLeviafan <lexofleviafan@gmail.com>",
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "coffeescript": "^2.6.1",
-    "mithril": "^2.3.2"
+    "mithril": "^2.3.3"
   },
   "devDependencies": {
     "benchmark": "^2.1.4",

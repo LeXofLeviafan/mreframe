@@ -1244,10 +1244,10 @@ mithril-node-render@^3.0.2:
   resolved "https://registry.yarnpkg.com/mithril-node-render/-/mithril-node-render-3.0.2.tgz#6410170081db6a050c75f626bca3e3ae46b61a44"
   integrity sha512-8GZfFWW7h1YjO8s9fe+vHpWG3zacGIytQ/FBKxlynHlwknp1KLRHM6MtrtbMy72dVdQOiYw7wyfZXD0IrvpQOQ==
 
-mithril@^2.3.2:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/mithril/-/mithril-2.3.2.tgz#d203499755d9d082cead08de399ef79d77337fb8"
-  integrity sha512-5FbFCbAaYSP4+ipaLAX10qJ6jKx6c4QrTQUGabBB8doH8PRcXV/Yd1lI+azu3TBuY6W2Evw0DuJtJJALLv3gQA==
+mithril@^2.3.3:
+  version "2.3.3"
+  resolved "https://registry.yarnpkg.com/mithril/-/mithril-2.3.3.tgz#82b848cefe2180eae231560a93ce0e208b662e0b"
+  integrity sha512-SaO21JZsRCqDtv0IK94qabD9dy0fD71jStFlcVKtVxfo7aW4lKWW5dy9EURGjSQJNaJSfV6wNdXfP8hMtr94rg==
 
 mkdirp-classic@^0.5.2:
   version "0.5.3"
