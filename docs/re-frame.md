@@ -32,6 +32,19 @@ which is where most `opts` are actually used.
 To replace db update checks with shallow-equality, run `rf._init({eq: eqShallow})`, and to use identity checks instead,
 run `rf._init({eq: identical})` (see [`util`](util.md)).
 
+### `inNamespace (namespace)`
+Produces an isolated ("namespaced") instance of `re-frame` module, with a separate `appDb`, subscriptions, events, effects,
+and coeffects. Invoking twice with the same namespace produces the same instance (base instance namespace is `''`).  
+You can identify a `re-frame` module instance by its `namespace` property.
+```js
+let _rf = rf.inNamespace('progress-frame');
+console.debug(_rf.namespace); // logs "progress-frame"
+_rf.regEventDb('init-db', [unwrap], (_, db) => db); // generic event names etc won't cause a collision with base module
+```
+(Note: `_init()` is meant to be used _once_, applies to all namespaces, and is exposed only by the base module instance.)
+
+_This feature is useful when implementing standalone widgets that work independently of each other; e.g. in a userscript._
+
 ### [`dispatch (event)`](https://day8.github.io/re-frame/api-re-frame.core/#dispatch)
 Asynchronously dispatches an event (described as `['id', ...args]`).
 ```js

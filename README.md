@@ -150,6 +150,9 @@ For further information, see [API reference](#api-reference) below and the follo
   or [`indentical`](docs/util.md#identical-a-b).
 * Q: I hate commas and languages that aren't syntactical supersets of JS. Can I still use this somehow?  
   A: Well if you _absolutely must_, you can [use JSX](docs/jsx-runtime.md). (Note that JSX is not exatly a great match for Reagent components.)
+* Q: I want to use features of `mreframe` in multiple independent parts of my webpage; can I implement them as separate "apps"?  
+  A: You can produce an isolated copy of `mreframe/re-frame` by invoking [`inNamespace`](docs/re-frame.md#inNamespace-namespace) on it.
+  (The main `mreframe` module also exposes a function by the same name; it has similar effect, but produces a "copy" of the main module.)
 
 
 # Examples
@@ -180,6 +183,8 @@ For further information, see [API reference](#api-reference) below and the follo
 
 There's also [`jsx-runtime`](docs/jsx-runtime.md) which isn't included in main module (it implements JSX support).
 
+Additionally, invoking `inNamespace(<name>)` produces a copy of the module with isolated `re-frame` (within the same page).
+
 Each of these can be used separately (`require('mreframe/<name>')`), or as part of the main module
 (`require('mreframe').<name>`; `.reFrame` in case of `re-frame` module). Note that the nodeps bundle doesn't load
 Mithril libraries by default (so you'll have to call the `_init` function which it also exports).
@@ -195,9 +200,11 @@ using `mreframe` with Wisp makes for mostly identical code to that of CLJS
 `mreframe` module API:
 * setup: [`_init`](docs/re-frame.md#_init-opts) (normally not needed);
 * submodules: [`reFrame`](docs/re-frame.md), [`reagent`](docs/reagent.md), [`atom`](docs/atom.md), [`util`](docs/util.md).
+* namespacing: [`rf.inNamespace`](docs/index.md) (for implementing isolated widgets);
 
 `mreframe/re-frame` module API:
 * setup: [`rf._init`](docs/re-frame.md#_init-opts) (normally not needed);
+* namespacing: [`rf.inNamespace`](docs/re-frame.md#inNamespace-namespace) (for implementing isolated widgets);
 * events (decision-making logic defined as pure functions):
   - registering functions ([`rf.regEventDb`](docs/re-frame.md#regEventDb-id-interceptors-handler),
     [`rf.regEventFx`](docs/re-frame.md#regEventFx-id-interceptors-handler),

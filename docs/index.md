@@ -8,5 +8,7 @@ Exports the following items:
 * [`reagent`](reagent.md) – the `mreframe/reagent` submodule
 * [`reFrame`](re-frame.md) – the `mreframe/re-frame` submodule
 * [`_init (opts)`](re-frame.md#_init-opts) from re-frame submodule
+* [`inNamespace (namespace)`](re-frame.md#inNamespace-namespace) which produces a copy of the above,
+  but replacing `reFrame` with its respective namespace.
 
 There's also [`jsx-runtime`](jsx-runtime.md) which isn't included in main module (it implements JSX support).
